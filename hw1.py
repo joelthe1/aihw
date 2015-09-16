@@ -1,30 +1,17 @@
-def build_graph(f):
-    graph = {}
-    print 'here'
-    x = 0
-    y = 0
-    for line in f:
-#        print line.strip()
-        if line.strip() == '':
-            break
-        if x >= 0 and x < 3:
-            nodes = line.strip().split(' ')
-#            print nodes
-            for node in nodes:
-                graph[node] = {}
-        elif x == 3:
-            y = int(line.strip())
-        elif x > 3 and x <= (3+y):
-            pipes = line.strip().split(' ')
-            tempList = []
-#            print pipes
-            pipeLength = int(pipes[2])
-            tempList.append(pipeLength)
-            tempList.extend(pipes[4:])
-            print pipes[1], tempList
-            graph[pipes[0]][pipes[1]] = tempList
-        x += 1
-    return graph
+from collections import deque
+
+def build_graph():
+    global algo, src, dest, mids, pipesNum, pipes, startTime, graph
+    graph.clear()
+    graph[src] = {}
+    for nodes in dest:
+        graph[nodes] = {}
+    for nodes in mids:
+        graph[nodes] = {}
+    for x in range(pipesNum):
+        temp = pipes[x].split(' ')
+        graph[temp[0]][temp[1]] = (temp[2:3] + temp[4:])
+    print graph
     
 def dfs(g, s):
     explored = []
@@ -39,20 +26,49 @@ def dfs(g, s):
             continue
         explored.append(node) 
         children = g[node]
+        temp = []
         if children:
             for keys in children:
-                stack.append(keys)
-#            temp = sorted(temp, key=str.lower, reverse=True)
- #           stack = stack + temp
+                temp.append(keys)
+            temp = sorted(temp, key=str.lower, reverse=True)
+            stack = stack + temp
 #            print stack
-        
-                
-        
+
+def bfs(g, s, d, st):
+    print "and here"
+    explored = []
+    frontier = deque(s)
+#    if s in d:
+#        print s
+#        return
+    while g:
+        if not frontier:
+            print explored
+            return False
+        node = frontier.popleft()
+        explored.append(node)
+        children = g[node]
+        if children:
+            for keys in children:
+                if not keys in frontier and not keys in explored:
+ #                   if keys in d:
+#                        print explored
+ #                       return
+                    frontier.append(keys)
 
 with open('graph-input.txt') as inp:
-    print inp.readline().strip()    
-    print inp.readline().strip()
-    graph = build_graph(inp)
-    print graph
-    dfs(graph, 'A')
-
+    testCases = int(inp.readline().strip())
+    graph = {}
+    for x in range(testCases):
+        algo = inp.readline().strip()
+        src = inp.readline().strip()
+        dest = inp.readline().strip().split(' ')
+        mids = inp.readline().strip().split(' ')
+        pipesNum = int(inp.readline().strip())
+        pipes = []
+        for y in range(pipesNum):
+            pipes.append(inp.readline().strip())
+        startTime = int(inp.readline().strip())
+        inp.readline()
+        print algo, src, dest, mids, pipesNum, pipes, startTime
+        build_graph()
