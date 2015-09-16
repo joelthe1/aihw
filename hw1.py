@@ -14,7 +14,7 @@ def build_graph(f):
                 graph[node] = {}
         elif x == 3:
             y = int(line.strip())
-        elif x > 3 and x < (3+y):
+        elif x > 3 and x <= (3+y):
             pipes = line.strip().split(' ')
             tempList = []
 #            print pipes
@@ -24,10 +24,35 @@ def build_graph(f):
             print pipes[1], tempList
             graph[pipes[0]][pipes[1]] = tempList
         x += 1
-    print graph
+    return graph
     
+def dfs(g, s):
+    explored = []
+    temp = []
+    stack = [s]
+    while g:
+        if not stack:
+            return False
+        node = stack.pop()
+        print node
+        if node in explored:
+            continue
+        explored.append(node) 
+        children = g[node]
+        if children:
+            for keys in children:
+                stack.append(keys)
+#            temp = sorted(temp, key=str.lower, reverse=True)
+ #           stack = stack + temp
+#            print stack
+        
+                
+        
 
 with open('graph-input.txt') as inp:
     print inp.readline().strip()    
     print inp.readline().strip()
-    build_graph(inp)
+    graph = build_graph(inp)
+    print graph
+    dfs(graph, 'A')
+
