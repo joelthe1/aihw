@@ -1,4 +1,5 @@
 from collections import deque
+from collections import OrderedDict
 
 def build_graph():
     global algo, src, dest, mids, pipesNum, pipes, startTime, graph
@@ -11,8 +12,15 @@ def build_graph():
     for x in range(pipesNum):
         temp = pipes[x].split(' ')
         graph[temp[0]][temp[1]] = (temp[2:3] + temp[4:])
-    print graph
-    
+    for key in graph:
+        d = graph[key]
+        if d:
+            od = OrderedDict(sorted(d.items(), key=lambda t: t[0]))
+            graph[key] = od
+    for k,v in graph.iteritems():
+        for k2, v2 in v.iteritems():
+            print k + ' ---> ' + k2
+
 def dfs(g, s):
     explored = []
     temp = []
@@ -70,5 +78,8 @@ with open('graph-input.txt') as inp:
             pipes.append(inp.readline().strip())
         startTime = int(inp.readline().strip())
         inp.readline()
-        print algo, src, dest, mids, pipesNum, pipes, startTime
+#        print algo, src, dest, mids, pipesNum, pipes, startTime
         build_graph()
+        
+        print 'and'
+#        if algo.lower() == 'bfs'
