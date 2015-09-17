@@ -20,7 +20,6 @@ def build_graph(order=False):
     for k,v in graph.iteritems():
         for k2, v2 in v.iteritems():
             print k + ' ---> ' + k2
-    print graph
 
 def dfs(s):
     global graph, startTime, dest
