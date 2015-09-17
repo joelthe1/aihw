@@ -1,7 +1,7 @@
 from collections import deque
 from collections import OrderedDict
 
-def build_graph():
+def build_graph(order=False):
     global algo, src, dest, mids, pipesNum, pipes, startTime, graph
     graph.clear()
     graph[src] = {}
@@ -15,32 +15,31 @@ def build_graph():
     for key in graph:
         d = graph[key]
         if d:
-            od = OrderedDict(sorted(d.items(), key=lambda t: t[0]))
+            od = OrderedDict(sorted(d.items(), key=lambda t: t[0], reverse=order))
             graph[key] = od
     for k,v in graph.iteritems():
         for k2, v2 in v.iteritems():
             print k + ' ---> ' + k2
 
-def dfs(g, s):
+def dfs(s):
+    global graph, startTime, dest
     explored = []
     temp = []
     stack = [s]
-    while g:
+    while True:
         if not stack:
+            print 'None'
             return False
         node = stack.pop()
-        print node
-        if node in explored:
-            continue
-        explored.append(node) 
-        children = g[node]
-        temp = []
+        explored.append(node)
+        if node in dest:
+            print node, startTime + len(explored) - 1
+            return node
+        children = graph[node]
         if children:
             for keys in children:
-                temp.append(keys)
-            temp = sorted(temp, key=str.lower, reverse=True)
-            stack = stack + temp
-#            print stack
+                if keys not in explored:
+                    stack.append(keys)
 
 def bfs(g, s, d, st):
     print "and here"
@@ -78,8 +77,8 @@ with open('graph-input.txt') as inp:
             pipes.append(inp.readline().strip())
         startTime = int(inp.readline().strip())
         inp.readline()
-#        print algo, src, dest, mids, pipesNum, pipes, startTime
-        build_graph()
-        
-        print 'and'
+        build_graph(True)
+        #TODO: Add handler for invalid start node.
+        if algo.lower() == 'dfs':
+            dfs(src)
 #        if algo.lower() == 'bfs'
