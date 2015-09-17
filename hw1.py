@@ -20,48 +20,50 @@ def build_graph(order=False):
     for k,v in graph.iteritems():
         for k2, v2 in v.iteritems():
             print k + ' ---> ' + k2
+    print graph
 
 def dfs(s):
     global graph, startTime, dest
     explored = []
-    temp = []
-    stack = [s]
+    stack = []
+    stack.append(s)
     while True:
         if not stack:
             print 'None'
-            return False
+            return
         node = stack.pop()
         explored.append(node)
         if node in dest:
             print node, startTime + len(explored) - 1
-            return node
+            return
         children = graph[node]
         if children:
             for keys in children:
                 if keys not in explored:
                     stack.append(keys)
 
-def bfs(g, s, d, st):
-    print "and here"
+def bfs(s):
+    global graph, startTime, dest
     explored = []
-    frontier = deque(s)
-#    if s in d:
-#        print s
-#        return
-    while g:
+    frontier = deque()
+    frontier.append(s)
+    while True:
         if not frontier:
-            print explored
-            return False
+            print 'None'
+            return
         node = frontier.popleft()
         explored.append(node)
-        children = g[node]
+        if node in dest:
+            print node, startTime + len(explored) - 1
+            return
+        children = graph[node]
         if children:
             for keys in children:
                 if not keys in frontier and not keys in explored:
- #                   if keys in d:
-#                        print explored
- #                       return
                     frontier.append(keys)
+
+def ucs(s):
+    print 'in ucs.'
 
 with open('graph-input.txt') as inp:
     testCases = int(inp.readline().strip())
@@ -77,8 +79,16 @@ with open('graph-input.txt') as inp:
             pipes.append(inp.readline().strip())
         startTime = int(inp.readline().strip())
         inp.readline()
-        build_graph(True)
-        #TODO: Add handler for invalid start node.
         if algo.lower() == 'dfs':
+            print ''
+            print 'dfs'
+            build_graph(True)
             dfs(src)
-#        if algo.lower() == 'bfs'
+        elif algo.lower() == 'bfs':
+            print ''
+            print 'bfs', src
+            build_graph(False)
+            bfs(src)
+        elif algo.lower() == 'ucs':
+            print ''
+            print 'ucs'

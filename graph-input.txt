@@ -1,4 +1,82 @@
-2
+21
+DFS
+A
+C
+B
+3
+A B 1 0
+B C 1 0
+A C 1 0
+0
+
+BFS
+A
+C
+B
+3
+A B 1 0
+B C 1 0
+A C 1 0
+0
+
+UCS
+A
+C
+B
+3
+A B 1 0
+B C 1 0
+A C 1 0
+0
+
+DFS
+P
+Q R
+L M N O
+5
+P L 10 0
+P N 5 2 3-4 6-9
+M Q 8 1 4-6
+O R 3 0
+N M 5 1 1-2
+5
+
+BFS
+P
+Q R
+L M N O
+5
+P L 10 0
+P N 5 2 3-4 6-9
+M Q 8 1 4-6
+O R 3 0
+N M 5 1 1-2
+5
+
+UCS
+P
+Q R
+L M N O
+5
+P L 10 0
+P N 5 2 3-4 6-9
+M Q 8 1 4-6
+O R 3 0
+N M 5 1 1-2
+5
+
+DFS
+A
+B C D
+E F G H I
+5
+A B 12 0
+A E 3 3 2-4 1-5 9-10
+E H 2 1 1-2
+H D 5 2 5-6 2-3
+I C 6 1 10-14
+3
+
 BFS
 A
 B C D
@@ -12,6 +90,18 @@ I C 6 1 10-14
 3
 
 UCS
+A
+B C D
+E F G H I
+5
+A B 12 0
+A E 3 3 2-4 1-5 9-10
+E H 2 1 1-2
+H D 5 2 5-6 2-3
+I C 6 1 10-14
+3
+
+DFS
 AA
 BA
 CA DA
@@ -20,3 +110,137 @@ AA BA 10 1 1-2
 AA CA 2 2 3-4 5-6
 CA BA 4 0
 0
+
+BFS
+AA
+BA
+CA DA
+3
+AA BA 10 1 1-2
+AA CA 2 2 3-4 5-6
+CA BA 4 0
+0
+
+UCS
+AA
+BA
+CA DA
+3
+AA BA 10 1 1-2
+AA CA 2 2 3-4 5-6
+CA BA 4 0
+0
+
+DFS
+S
+G
+A B
+4
+S A 2 0
+A B 2 0
+S B 1 0
+B G 1 1 1-2
+0
+
+BFS
+S
+G
+A B
+4
+S A 2 0
+A B 2 0
+S B 1 0
+B G 1 1 1-2
+0
+
+UCS
+S
+G
+A B
+4
+S A 2 0
+A B 2 0
+S B 1 0
+B G 1 1 1-2
+0
+
+DFS
+A
+G
+B C D E F
+6
+A B 0 0
+A C 0 0
+A D 0 0
+B F 0 0
+C G 0 0
+B E 0 0
+4
+
+BFS
+A
+G
+B C D E F
+6
+A B 0 0
+A C 0 0
+A D 0 0
+B F 0 0
+C G 0 0
+B E 0 0
+4
+
+UCS
+A
+G
+B C D E F
+6
+A B 0 0
+A C 0 0
+A D 0 0
+B F 0 0
+C G 0 0
+B E 0 0
+4
+
+DFS
+A
+G
+B C D E F
+7
+A D 1 0
+B G 1 0
+B F 5 0
+C G 4 0
+B E 10 0
+A C 3 0
+A B 5 0
+6
+
+BFS
+A
+G
+B C D E F
+7
+A D 1 0
+B G 1 0
+B F 5 0
+C G 4 0
+B E 10 0
+A C 3 0
+A B 5 0
+6
+
+UCS
+A
+G
+B C D E F
+7
+A D 1 0
+B G 1 0
+B F 5 0
+C G 4 0
+B E 10 0
+A C 3 0
+A B 5 0
+6
