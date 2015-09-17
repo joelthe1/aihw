@@ -18,9 +18,9 @@ def build_graph(order=False):
         if d:
             od = OrderedDict(sorted(d.items(), key=lambda t: t[0], reverse=order))
             graph[key] = od
-    for k,v in graph.iteritems():
-        for k2, v2 in v.iteritems():
-            print k + ' ---> ' + k2
+#    for k,v in graph.iteritems():
+#        for k2, v2 in v.iteritems():
+#            print k + ' ---> ' + k2
 
 def dfs(s):
     global graph, startTime, dest
@@ -81,15 +81,11 @@ with open(inputFile) as inp:
         startTime = int(inp.readline().strip())
         inp.readline()
         if algo.lower() == 'dfs':
-            print ''
-            print 'dfs'
             build_graph(True)
             dfs(src)
         elif algo.lower() == 'bfs':
-            print ''
-            print 'bfs', src
             build_graph(False)
             bfs(src)
-        elif algo.lower() == 'ucs':
-            print ''
-            print 'ucs'
+#        elif algo.lower() == 'ucs':
+#            print ''
+#            print 'ucs'
