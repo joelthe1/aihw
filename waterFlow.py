@@ -1,5 +1,6 @@
 from collections import deque
 from collections import OrderedDict
+import sys
 
 def build_graph(order=False):
     global algo, src, dest, mids, pipesNum, pipes, startTime, graph
@@ -64,7 +65,8 @@ def bfs(s):
 def ucs(s):
     print 'in ucs.'
 
-with open('graph-input.txt') as inp:
+inputFile = sys.argv[2]
+with open(inputFile) as inp:
     testCases = int(inp.readline().strip())
     graph = {}
     for x in range(testCases):
