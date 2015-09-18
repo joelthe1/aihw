@@ -1,5 +1,6 @@
 from collections import deque
 from collections import OrderedDict
+import heapq
 import sys
 
 def build_graph(order=False):
@@ -18,9 +19,10 @@ def build_graph(order=False):
         if d:
             od = OrderedDict(sorted(d.items(), key=lambda t: t[0], reverse=order))
             graph[key] = od
-#    for k,v in graph.iteritems():
-#        for k2, v2 in v.iteritems():
-#            print k + ' ---> ' + k2
+    for k,v in graph.iteritems():
+        for k2, v2 in v.iteritems():
+            print k + ' ---> ' + k2
+    print graph
 
 def dfs(s):
     global graph, startTime, dest
@@ -61,10 +63,49 @@ def bfs(s):
             for keys in children:
                 if not keys in frontier and not keys in explored:
                     frontier.append(keys)
-
+                    
 def ucs(s):
-    print 'in ucs.'
-
+    global graph, startTime, dest
+    closed = []
+    openq = []
+    heapq.heappush(openq, (0, s))
+    while True:
+        if not openq:
+            print 'None'
+            return
+        node = heapq.heappop(openq)
+        if node[1] in dest:
+            print 'done'
+            print node[1], node[0] + startTime
+            return
+        children = graph[node[1]]
+        if children:
+            for child in children:
+                flag = False
+                childCost = int(children[child][0]) + node[0]
+                for vals in openq:
+                    if vals[1] == child:
+                        if vals[0] > childCost:
+                            openq.remove(openq.index(vals))
+                            heapq.heapify(openq)
+                            heapq.heappush(openq, (childCost, child))
+                            flag = True
+                            break
+                if flag:
+                    continue
+                for vals in closed:
+                    if vals[1] == child:
+                        if vals[0] > childCost:
+                            closed.remove(closed.index(vals))
+                            heapq.heappush(openq, (childCost, child))
+                            flag = True
+                            break
+                if flag:
+                    continue
+                else:
+                    heapq.heappush(openq, (childCost, child))
+        closed.append(node)
+                        
 inputFile = sys.argv[2]
 with open(inputFile) as inp:
     testCases = int(inp.readline().strip())
@@ -86,6 +127,7 @@ with open(inputFile) as inp:
         elif algo.lower() == 'bfs':
             build_graph(False)
             bfs(src)
-#        elif algo.lower() == 'ucs':
-#            print ''
-#            print 'ucs'
+        elif algo.lower() == 'ucs':
+            print 
+            build_graph(False)            
+            ucs(src)
