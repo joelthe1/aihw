@@ -63,7 +63,23 @@ def bfs(s):
             for keys in children:
                 if not keys in frontier and not keys in explored:
                     frontier.append(keys)
-                    
+
+def inOffTime(periods, epoch):
+    print periods
+    print epoch
+    offTimes = set()
+    if len(periods) <= 1:
+        print 'returned.'
+        return False
+    slots = periods[1:]
+    for s in slots:
+        t = s.split('-')
+        for x in range(int(t[0]), int(t[1]) + 1):
+            offTimes.add(x)
+    print offTimes
+    if epoch%24 in periods:
+        return True
+                                        
 def ucs(s):
     global graph, startTime, dest
     closed = []
@@ -76,13 +92,15 @@ def ucs(s):
         node = heapq.heappop(openq)
         if node[1] in dest:
             print 'done'
-            print node[1], node[0] + startTime
+            print node[1], (node[0] + startTime)%24
             return
         children = graph[node[1]]
         if children:
             for child in children:
                 flag = False
                 childCost = int(children[child][0]) + node[0]
+                if inOffTime(children[child], node[0]):
+                    continue
                 for vals in openq:
                     if vals[1] == child:
                         if vals[0] > childCost:
