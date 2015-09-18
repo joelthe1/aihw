@@ -19,10 +19,10 @@ def build_graph(order=False):
         if d:
             od = OrderedDict(sorted(d.items(), key=lambda t: t[0], reverse=order))
             graph[key] = od
-    for k,v in graph.iteritems():
-        for k2, v2 in v.iteritems():
-            print k + ' ---> ' + k2
-    print graph
+#    for k,v in graph.iteritems():
+#        for k2, v2 in v.iteritems():
+#            print k + ' ---> ' + k2
+#    print graph
 
 def dfs(s):
     global graph, startTime, dest
@@ -65,18 +65,14 @@ def bfs(s):
                     frontier.append(keys)
 
 def inOffTime(periods, epoch):
-    print periods
-    print epoch
     offTimes = set()
     if len(periods) <= 1:
-        print 'returned.'
         return False
     slots = periods[1:]
     for s in slots:
         t = s.split('-')
         for x in range(int(t[0]), int(t[1]) + 1):
             offTimes.add(x)
-    print offTimes
     if epoch%24 in periods:
         return True
                                         
@@ -91,7 +87,6 @@ def ucs(s):
             return
         node = heapq.heappop(openq)
         if node[1] in dest:
-            print 'done'
             print node[1], (node[0] + startTime)%24
             return
         children = graph[node[1]]
@@ -104,9 +99,10 @@ def ucs(s):
                 for vals in openq:
                     if vals[1] == child:
                         if vals[0] > childCost:
-                            openq.remove(openq.index(vals))
+                            print openq.index(vals)
+                            openq[openq.index(vals)] = (childCost, child)
                             heapq.heapify(openq)
-                            heapq.heappush(openq, (childCost, child))
+#                            heapq.heappush(openq, (childCost, child))
                             flag = True
                             break
                 if flag:
