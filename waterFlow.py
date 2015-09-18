@@ -31,12 +31,12 @@ def dfs(s):
     stack.append(s)
     while True:
         if not stack:
-            print 'None'
+            print 'dfs','None'
             return
         node = stack.pop()
         explored.append(node)
         if node in dest:
-            print node, startTime + len(explored) - 1
+            print 'dfs', node, startTime + len(explored) - 1
             return
         children = graph[node]
         if children:
@@ -51,12 +51,12 @@ def bfs(s):
     frontier.append(s)
     while True:
         if not frontier:
-            print 'None'
+            print 'bfs', 'None'
             return
         node = frontier.popleft()
         explored.append(node)
         if node in dest:
-            print node, startTime + len(explored) - 1
+            print 'bfs', node, startTime + len(explored) - 1
             return
         children = graph[node]
         if children:
@@ -73,52 +73,48 @@ def inOffTime(periods, epoch):
         t = s.split('-')
         for x in range(int(t[0]), int(t[1]) + 1):
             offTimes.add(x)
-    if epoch%24 in periods:
+    if epoch%24 in offTimes:
         return True
                                         
 def ucs(s):
     global graph, startTime, dest
     closed = []
+    closednodes = []
     openq = []
-    heapq.heappush(openq, (0, s))
+    opennodes = []
+    heapq.heappush(openq, (startTime, s))
+    opennodes.append(s)
     while True:
         if not openq:
-            print 'None'
+            print 'ucs','None'
             return
         node = heapq.heappop(openq)
+        opennodes.remove(node[1])
         if node[1] in dest:
-            print node[1], (node[0] + startTime)%24
+            print 'ucs', node[1], node[0]
             return
         children = graph[node[1]]
         if children:
             for child in children:
-                flag = False
                 childCost = int(children[child][0]) + node[0]
-                if inOffTime(children[child], node[0]):
-                    continue
-                for vals in openq:
-                    if vals[1] == child:
-                        if vals[0] > childCost:
-                            print openq.index(vals)
-                            openq[openq.index(vals)] = (childCost, child)
-                            heapq.heapify(openq)
-#                            heapq.heappush(openq, (childCost, child))
-                            flag = True
-                            break
-                if flag:
-                    continue
-                for vals in closed:
-                    if vals[1] == child:
-                        if vals[0] > childCost:
-                            closed.remove(closed.index(vals))
-                            heapq.heappush(openq, (childCost, child))
-                            flag = True
-                            break
-                if flag:
-                    continue
-                else:
+                if child not in opennodes and child not in closed and not inOffTime(children[child], node[0]):
                     heapq.heappush(openq, (childCost, child))
+                    opennodes.append(child)
+                elif child in opennodes and not inOffTime(children[child][0], node[0]):
+                    old_child_index = [y[1] for y in openq].index(child)
+                    if childCost < openq[old_child_index][0]:
+                        del openq[old_child_index]
+                        openq.append((childCost, child))
+                        heapq.heapify(openq)
+                elif child in closednodes and not inOffTime(children[child], node[0]):
+                    old_child_index = [y[1] for y in closed].index(child)
+                    if childCost < closed[old_child_index][0]:
+                        del closed[old_child_index]
+                        closednodes.remove(child)
+                        heapq.heappush(openq, (childCost, child))
+                        opennodes.append(child)
         closed.append(node)
+        closednodes.append(node[1])
                         
 inputFile = sys.argv[2]
 with open(inputFile) as inp:
@@ -142,6 +138,5 @@ with open(inputFile) as inp:
             build_graph(False)
             bfs(src)
         elif algo.lower() == 'ucs':
-            print 
             build_graph(False)            
             ucs(src)
