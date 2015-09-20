@@ -31,12 +31,12 @@ def dfs(s):
     stack.append(s)
     while True:
         if not stack:
-            print 'dfs','None'
+            print 'None'
             return
         node = stack.pop()
         explored.append(node)
         if node in dest:
-            print 'dfs', node, startTime + len(explored) - 1
+            print node, startTime + len(explored) - 1
             return
         children = graph[node]
         if children:
@@ -51,12 +51,12 @@ def bfs(s):
     frontier.append(s)
     while True:
         if not frontier:
-            print 'bfs', 'None'
+            print 'None'
             return
         node = frontier.popleft()
         explored.append(node)
         if node in dest:
-            print 'bfs', node, startTime + len(explored) - 1
+            print node, startTime + len(explored) - 1
             return
         children = graph[node]
         if children:
@@ -86,20 +86,23 @@ def ucs(s):
     opennodes.append(s)
     while True:
         if not openq:
-            print 'ucs','None'
+            print 'None'
             return
+ #       print openq
         node = heapq.heappop(openq)
+#        print node
         opennodes.remove(node[1])
         if node[1] in dest:
-            print 'ucs', node[1], node[0]
+            print node[1], node[0]%24
             return
         children = graph[node[1]]
         if children:
             for child in children:
                 childCost = int(children[child][0]) + node[0]
-                if child not in opennodes and child not in closed and not inOffTime(children[child], node[0]):
-                    heapq.heappush(openq, (childCost, child))
-                    opennodes.append(child)
+                if child not in opennodes or child not in closed:
+                    if not inOffTime(children[child], node[0]):
+                        heapq.heappush(openq, (childCost, child))
+                        opennodes.append(child)
                 elif child in opennodes and not inOffTime(children[child][0], node[0]):
                     old_child_index = [y[1] for y in openq].index(child)
                     if childCost < openq[old_child_index][0]:
