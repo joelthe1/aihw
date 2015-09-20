@@ -102,9 +102,7 @@ def ucs(s):
         if not openq:
             print 'None'
             return
- #       print openq
         node = heapq.heappop(openq)
-#        print node
         opennodes.remove(node[1])
         if node[1] in dest:
             print node[1], node[0]%24
@@ -113,10 +111,9 @@ def ucs(s):
         if children:
             for child in children:
                 childCost = int(children[child][0]) + node[0]
-                if child not in opennodes or child not in closed:
-                    if not inOffTime(children[child], node[0]):
-                        heapq.heappush(openq, (childCost, child))
-                        opennodes.append(child)
+                if child not in opennodes and child not in closednodes and not inOffTime(children[child], node[0]):
+                    heapq.heappush(openq, (childCost, child))
+                    opennodes.append(child)
                 elif child in opennodes and not inOffTime(children[child][0], node[0]):
                     old_child_index = [y[1] for y in openq].index(child)
                     if childCost < openq[old_child_index][0]:
@@ -124,7 +121,7 @@ def ucs(s):
                         openq.append((childCost, child))
                         heapq.heapify(openq)
                 elif child in closednodes and not inOffTime(children[child], node[0]):
-                    old_child_index = [y[1] for y in closed].index(child)
+                    old_child_index = [y[1] for y in closed].index(child)                    
                     if childCost < closed[old_child_index][0]:
                         del closed[old_child_index]
                         closednodes.remove(child)
@@ -134,6 +131,7 @@ def ucs(s):
         closednodes.append(node[1])
                         
 inputFile = sys.argv[2]
+wfile = open('output.txt', 'w')
 with open(inputFile) as inp:
     testCases = int(inp.readline().strip())
     graph = {}
