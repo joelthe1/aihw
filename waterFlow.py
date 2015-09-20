@@ -29,6 +29,7 @@ def dfs(s):
     explored = []
     stack = []
     stack.append(s)
+    parent = {}
     while True:
         if not stack:
             print 'None'
@@ -36,17 +37,24 @@ def dfs(s):
         node = stack.pop()
         explored.append(node)
         if node in dest:
-            print node, startTime + len(explored) - 1
+            temp_node = node
+            path_time = 0
+            while temp_node != s:
+                temp_node = parent[temp_node]
+                path_time += 1
+            print node, startTime + path_time
             return
         children = graph[node]
         if children:
             for keys in children:
                 if keys not in explored:
                     stack.append(keys)
+                    parent[keys] = node
 
 def bfs(s):
     global graph, startTime, dest
     explored = []
+    parent = {}
     frontier = deque()
     frontier.append(s)
     while True:
@@ -56,13 +64,19 @@ def bfs(s):
         node = frontier.popleft()
         explored.append(node)
         if node in dest:
-            print node, startTime + len(explored) - 1
+            temp_node = node
+            path_time = 0
+            while temp_node != s:
+                temp_node = parent[temp_node]
+                path_time += 1
+            print node, startTime + path_time
             return
         children = graph[node]
         if children:
             for keys in children:
                 if not keys in frontier and not keys in explored:
                     frontier.append(keys)
+                    parent[keys] = node
 
 def inOffTime(periods, epoch):
     offTimes = set()
@@ -77,7 +91,7 @@ def inOffTime(periods, epoch):
         return True
                                         
 def ucs(s):
-    global graph, startTime, dest
+    global graph, startTime, src, dest
     closed = []
     closednodes = []
     openq = []
