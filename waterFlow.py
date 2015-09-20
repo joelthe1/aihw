@@ -33,6 +33,7 @@ def dfs(s):
     while True:
         if not stack:
             print 'None'
+            wfile.write('None\n')
             return
         node = stack.pop()
         explored.append(node)
@@ -42,7 +43,9 @@ def dfs(s):
             while temp_node != s:
                 temp_node = parent[temp_node]
                 path_time += 1
-            print node, startTime + path_time
+            time = (startTime + path_time)%24
+            print node, (startTime + path_time)%24
+            wfile.write(node + ' ' + str(time) + '\n')
             return
         children = graph[node]
         if children:
@@ -60,6 +63,7 @@ def bfs(s):
     while True:
         if not frontier:
             print 'None'
+            wfile.write('None\n')
             return
         node = frontier.popleft()
         explored.append(node)
@@ -69,7 +73,9 @@ def bfs(s):
             while temp_node != s:
                 temp_node = parent[temp_node]
                 path_time += 1
-            print node, startTime + path_time
+            print node, (startTime + path_time)%24
+            time = (startTime + path_time)%24
+            wfile.write(node + ' ' + str(time) + '\n')
             return
         children = graph[node]
         if children:
@@ -101,11 +107,13 @@ def ucs(s):
     while True:
         if not openq:
             print 'None'
+            wfile.write('None' + '\n')
             return
         node = heapq.heappop(openq)
         opennodes.remove(node[1])
         if node[1] in dest:
             print node[1], node[0]%24
+            wfile.write(node[1] + ' ' + str(node[0]%24) + '\n')
             return
         children = graph[node[1]]
         if children:
@@ -155,3 +163,4 @@ with open(inputFile) as inp:
         elif algo.lower() == 'ucs':
             build_graph(False)            
             ucs(src)
+wfile.close()
