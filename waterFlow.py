@@ -13,6 +13,10 @@ def build_graph(order=False):
         graph[nodes] = {}
     for x in range(pipesNum):
         temp = pipes[x].split(' ')
+        graph[temp[0]] = {}
+        graph[temp[1]] = {}
+    for x in range(pipesNum):
+        temp = pipes[x].split(' ')
         graph[temp[0]][temp[1]] = (temp[2:3] + temp[4:])
     for key in graph:
         d = graph[key]
