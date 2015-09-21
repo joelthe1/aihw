@@ -44,7 +44,7 @@ def dfs(s):
                 temp_node = parent[temp_node]
                 path_time += 1
             time = (startTime + path_time)%24
-            print node, (startTime + path_time)%24
+            print node, time
             wfile.write(node + ' ' + str(time) + '\n')
             return
         children = graph[node]
@@ -73,8 +73,8 @@ def bfs(s):
             while temp_node != s:
                 temp_node = parent[temp_node]
                 path_time += 1
-            print node, (startTime + path_time)%24
             time = (startTime + path_time)%24
+            print node, time
             wfile.write(node + ' ' + str(time) + '\n')
             return
         children = graph[node]
@@ -122,7 +122,7 @@ def ucs(s):
                 if child not in opennodes and child not in closednodes and not inOffTime(children[child], node[0]):
                     heapq.heappush(openq, (childCost, child))
                     opennodes.append(child)
-                elif child in opennodes and not inOffTime(children[child][0], node[0]):
+                elif child in opennodes and not inOffTime(children[child], node[0]):
                     old_child_index = [y[1] for y in openq].index(child)
                     if childCost < openq[old_child_index][0]:
                         del openq[old_child_index]
