@@ -1,14 +1,33 @@
-def minimax():
-    return
+def minimax(state):
+    moves = []
+    next_moves = actions(state, 'max')
+    print next_moves
+    for index, s in enumerate(next_moves):
+        temp = minimax_min(s, 1)
+        moves.append(temp)
+        moves.append(s)
+    print moves
 
 def minimax_max(state, depth):
     if depth == cutoff_depth:
-        return eval(state)
+        return evaluate(state, 'max')
     value = float('-inf')
-    
+    next_moves = actions(state, 'max')
+    for s in next_moves:
+        value = max(value, minimax_min(s, depth + 1))
+    return value
 
+def minimax_min(state, depth):
+    if depth == cutoff_depth:
+        return evaluate(state, 'min')
+    value = float('inf')
+    next_moves = actions(state, 'max')
+    for s in next_moves:
+        value = min(value, minimax_max(s, depth + 1))
+    return value
+    
 def actions(state, p_type):
-    global my_player
+    global my_player, p2_mancala, p1_mancala
     length = p2_mancala + 1
     action_set = []
     if p_type == 'max':
@@ -41,17 +60,26 @@ def actions(state, p_type):
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
-                
-        print action_set
-            
-            
+            action_set.reverse()
+#        print action_set
+        return action_set
     
-def eval(state):
+def evaluate(state, p_type):
     global p1_mancala, p2_mancala, my_player
-    if my_player == 1:
-        return state[p1_mancala] - state[p2_mancala]
+    if p_type == 'max':
+        if my_player == 1:
+#            print 'max p1'
+            return state[p1_mancala] - state[p2_mancala]
+        else:
+#            print 'max p2'
+            return state[p2_mancala] - state[p1_mancala]
     else:
-        return state[p2_mancala] - state[p1_mancala]
+        if my_player == 1:
+#            print 'min p1'
+            return state[p2_mancala] - state[p1_mancala]
+        else:
+#            print 'min p2'
+            return state[p1_mancala] - state[p2_mancala]
     
 
 file = 'input.txt' #sys.argv[2]
@@ -76,7 +104,10 @@ state = p1 + p2
 p2_mancala = len(state) - 1
 
 print state
-print p1_mancala
-print p2_mancala
+#print p1_mancala
+#print p2_mancala
 
-actions(state, 'max')
+#actions(state, 'max')
+#print evaluate(state, 'min')
+
+minimax(state)
