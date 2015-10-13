@@ -9,6 +9,7 @@ def minimax_max(state, depth):
 
 def actions(state, p_type):
     global my_player
+    length = p2_mancala + 1
     action_set = []
     if p_type == 'max':
         if my_player == 1:
@@ -17,11 +18,13 @@ def actions(state, p_type):
                     temp = state[:]
                     coins = temp[x]
                     temp[x] = 0
+                    z = 1
                     for y in range(coins):
-                        if x+y+1 >= p2_mancala:
-                            temp[p2_mancala - (x+y+1)] += 1
+                        if ((x+y+z)%(length)) == p2_mancala:
+                            z += 1
+                            temp[(x+y+z)%(length)] += 1
                         else:
-                            temp[x+y+1] += 1
+                            temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
 
         elif my_player == 2:
@@ -32,17 +35,14 @@ def actions(state, p_type):
                     temp[x] = 0
                     z = 1
                     for y in range(coins):
-                        if x+y+z > p2_mancala:
-                            if (x+y+z-p2_mancala-1) == p1_mancala:
-                                print 'in here'
-                                z += 1
-                                temp[x+y+z-p2_mancala-1] += 1
-                            else:
-                                temp[x+y+z-p2_mancala-1] += 1                                
+                        if ((x+y+z)%(length)) == p1_mancala:
+                            z += 1
+                            temp[(x+y+z)%(length)] += 1
                         else:
-                            temp[x+y+z] += 1
+                            temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
-    print action_set
+                
+        print action_set
             
             
     
