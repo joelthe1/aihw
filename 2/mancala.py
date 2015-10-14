@@ -5,17 +5,21 @@ def minimax(state):
     next_moves = actions(state, 'max')
     print next_moves
     for index, s in enumerate(next_moves):
-        if continue_move(state, s, 'max'):
-            temp = minimax_max(s, 1)
-        else:
-            temp = minimax_min(s, 1)
-        moves.append(temp)
-        moves.append(s)
+        if s: 
+            if continue_move(state, s, 'max'):
+                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
+                temp = minimax_max(s, 1, index+2)
+            else:
+                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
+                temp = minimax_min(s, 1, index+2)
+            wfile.write('root'+','+'0,'+str(temp)+'\n')
+            moves.append(temp)
+            moves.append(s)
     print moves
     scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
-    index, value = max(enumerate(scoreArr), key=operator.itemgetter(1))
-#    print value, moves[index*2 + 1]
-    max_state = moves[index*2 + 1]
+    i, value = max(enumerate(scoreArr), key=operator.itemgetter(1))
+    print value, moves[i*2 + 1]
+    max_state = moves[i*2 + 1]
     next_legal_state(state, max_state)
 
 def next_legal_state(parent, child):
@@ -23,34 +27,46 @@ def next_legal_state(parent, child):
     if continue_move(parent, child, 'max'):
         preq_moves = actions(child, 'max')
         for preq_s in preq_moves:
-            next_legal_state(child, preq_s)
+            if preq_s:
+                next_legal_state(child, preq_s)
     if terminator == 0:
         terminator += 1
         print evaluate(child, 'max'), child
 
-def minimax_max(state, depth):
+def minimax_max(state, depth, pit):
     if depth == cutoff_depth:
-        return evaluate(state, 'max')
+        leaf_value = evaluate(state, 'max')
+        wfile.write(myChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
+        return leaf_value
     value = float('-inf')
+    wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     next_moves = actions(state, 'max')
-    for s in next_moves:
-        if continue_move(state, s, 'max'):
-            value = max(value, minimax_max(s, depth + 1))
-        else:
-            value = max(value, minimax_min(s, depth + 1))
+    print next_moves
+    for index, s in enumerate(next_moves):
+        if s:
+            if continue_move(state, s, 'max'):
+                
+                value = max(value, minimax_max(s, depth, index+2))
+            else:
+                value = max(value, minimax_min(s, depth + 1, index+2))
+    wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
-def minimax_min(state, depth):
+def minimax_min(state, depth, pit):
     if depth == cutoff_depth:
-        return evaluate(state, 'min')
+        leaf_value = evaluate(state, 'min')
+        wfile.write(oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
+        return leaf_value
     value = float('inf')
+    wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     next_moves = actions(state, 'min')
-    print state
-    for s in next_moves:
-        if continue_move(state, s, 'min'):
-            value = min(value, minimax_min(s, depth + 1))
-        else:
-            value = min(value, minimax_max(s, depth + 1))
+    for index, s in enumerate(next_moves):
+        if s:
+            if continue_move(state, s, 'min'):
+                value = min(value, minimax_min(s, depth, index+2))
+            else:
+                value = min(value, minimax_max(s, depth + 1, index+2))
+    wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
 def evaluate(state, p_type):
@@ -97,6 +113,8 @@ def actions(state, p_type):
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
+                else:
+                    action_set.append([])
 
         elif my_player == 2:
             for x in range(p1_mancala + 1, p2_mancala):
@@ -112,6 +130,8 @@ def actions(state, p_type):
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
+                else:
+                    action_set.append([])
             action_set.reverse()
 
     if p_type == 'min':
@@ -129,6 +149,8 @@ def actions(state, p_type):
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
+                else:
+                    action_set.append([])
 
         elif my_player == 1:
             for x in range(p1_mancala + 1, p2_mancala):
@@ -144,6 +166,8 @@ def actions(state, p_type):
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
+                else:
+                    action_set.append([])
             action_set.reverse()
     return action_set
 
@@ -169,7 +193,17 @@ p2 = [int(x) for x in p2_inp]
 
 state = p1 + p2
 p2_mancala = len(state) - 1
+
 terminator = 0
+
+myChar = 'B'
+oppChar = 'A'
+
+if my_player == 2:
+    myChar = 'A'
+    oppChar = 'B'
+    
+
 print state
 #print p1_mancala
 #print p2_mancala
