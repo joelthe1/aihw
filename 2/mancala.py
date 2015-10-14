@@ -4,11 +4,13 @@ def minimax(state):
     print next_moves
     for index, s in enumerate(next_moves):
         if continue_move(state, s, 'max'):
+            print 'in here'
             temp = minimax_max(s, 1)
         else:
             temp = minimax_min(s, 1)
         moves.append(temp)
         moves.append(s)
+        print moves
     print moves
 
 def minimax_max(state, depth):
@@ -32,6 +34,7 @@ def minimax_min(state, depth):
         return evaluate(state, 'min')
     value = float('inf')
     next_moves = actions(state, 'min')
+    print state
     for s in next_moves:
         if continue_move(state, s, 'min'):
             print 'in the min continue'            
@@ -78,7 +81,7 @@ def actions(state, p_type):
     action_set = []
     if p_type == 'max':
         if my_player == 1:
-            for x in range(p1_mancala):
+             for x in range(p1_mancala):
                 if state[x] != 0:
                     temp = state[:]
                     coins = temp[x]
@@ -107,8 +110,41 @@ def actions(state, p_type):
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
             action_set.reverse()
+
+    if p_type == 'min':
+        if my_player == 2:
+            for x in range(p1_mancala):
+                if state[x] != 0:
+                    temp = state[:]
+                    coins = temp[x]
+                    temp[x] = 0
+                    z = 1
+                    for y in range(coins):
+                        if ((x+y+z)%(length)) == p2_mancala:
+                            z += 1
+                            temp[(x+y+z)%(length)] += 1
+                        else:
+                            temp[(x+y+z)%(length)] += 1
+                    action_set.append(temp)
+
+        elif my_player == 1:
+            for x in range(p1_mancala + 1, p2_mancala):
+                if state[x] != 0:
+                    temp = state[:]
+                    coins = temp[x]
+                    temp[x] = 0
+                    z = 1
+                    for y in range(coins):
+                        if ((x+y+z)%(length)) == p1_mancala:
+                            z += 1
+                            temp[(x+y+z)%(length)] += 1
+                        else:
+                            temp[(x+y+z)%(length)] += 1
+                    action_set.append(temp)
+            action_set.reverse()
+                        
 #        print action_set
-        return action_set
+    return action_set
     
 def evaluate(state, p_type):
     if p_type == 'max':
