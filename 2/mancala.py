@@ -1,3 +1,5 @@
+import operator
+
 def minimax(state):
     moves = []
     next_moves = actions(state, 'max')
@@ -10,8 +12,22 @@ def minimax(state):
             temp = minimax_min(s, 1)
         moves.append(temp)
         moves.append(s)
-        print moves
     print moves
+    scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
+    index, value = max(enumerate(scoreArr), key=operator.itemgetter(1))
+    print value, moves[index*2 + 1]
+    max_state = moves[index*2 + 1]
+    next_legal_state(state, max_state)
+
+def next_legal_state(parent, child):
+    global terminator
+    if continue_move(parent, child, 'max'):
+        preq_moves = actions(child, 'max')
+        for preq_s in preq_moves:
+            next_legal_state(child, preq_s)
+    if terminator == 0:
+        terminator += 1
+        print evaluate(child, 'max'), child
 
 def minimax_max(state, depth):
     if depth == cutoff_depth:
@@ -172,7 +188,7 @@ p2 = [int(x) for x in p2_inp]
 
 state = p1 + p2
 p2_mancala = len(state) - 1
-
+terminator = 0
 print state
 #print p1_mancala
 #print p2_mancala
