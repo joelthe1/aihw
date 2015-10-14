@@ -3,31 +3,77 @@ def minimax(state):
     next_moves = actions(state, 'max')
     print next_moves
     for index, s in enumerate(next_moves):
-        temp = minimax_min(s, 1)
+        if continue_move(state, s, 'max'):
+            temp = minimax_max(s, 1)
+        else:
+            temp = minimax_min(s, 1)
         moves.append(temp)
         moves.append(s)
     print moves
 
 def minimax_max(state, depth):
     if depth == cutoff_depth:
+        print 'max end'
         return evaluate(state, 'max')
     value = float('-inf')
     next_moves = actions(state, 'max')
     for s in next_moves:
-        value = max(value, minimax_min(s, depth + 1))
+        if continue_move(state, s, 'max'):
+            print 'in the max continue'
+            value = max(value, minimax_max(s, depth + 1))
+        else:
+            print 'in the max else'            
+            value = max(value, minimax_min(s, depth + 1))
     return value
 
 def minimax_min(state, depth):
     if depth == cutoff_depth:
+        print 'min end'
         return evaluate(state, 'min')
     value = float('inf')
-    next_moves = actions(state, 'max')
+    next_moves = actions(state, 'min')
     for s in next_moves:
-        value = min(value, minimax_max(s, depth + 1))
+        if continue_move(state, s, 'min'):
+            print 'in the min continue'            
+            value = min(value, minimax_min(s, depth + 1))
+        else:
+            print 'in the min else.'            
+            value = min(value, minimax_max(s, depth + 1))
     return value
+
+def continue_move(parent, child, p_type):
+    if p_type == 'max':
+        if my_player == 1:
+            print 'it is max 1'
+            if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
+                print 'it is true'
+                return True
+            print 'it is false'
+            return False
+        elif my_player == 2:
+            print 'it is max 2'
+            if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
+                print 'it is true'
+                return True
+            print 'it is false'
+            return False
+    elif p_type == 'min':
+        if my_player == 1:
+            print 'it is min 1'            
+            if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
+                print 'it is true'
+                return True
+                print 'it is false'
+            return False
+        elif my_player == 2:
+            print 'it is min 2'            
+            if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
+                print 'it is true'
+                return True
+                print 'it is false'
+            return False
     
 def actions(state, p_type):
-    global my_player, p2_mancala, p1_mancala
     length = p2_mancala + 1
     action_set = []
     if p_type == 'max':
@@ -65,7 +111,6 @@ def actions(state, p_type):
         return action_set
     
 def evaluate(state, p_type):
-    global p1_mancala, p2_mancala, my_player
     if p_type == 'max':
         if my_player == 1:
 #            print 'max p1'
