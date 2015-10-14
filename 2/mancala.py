@@ -6,7 +6,6 @@ def minimax(state):
     print next_moves
     for index, s in enumerate(next_moves):
         if continue_move(state, s, 'max'):
-            print 'in here'
             temp = minimax_max(s, 1)
         else:
             temp = minimax_min(s, 1)
@@ -15,7 +14,7 @@ def minimax(state):
     print moves
     scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
     index, value = max(enumerate(scoreArr), key=operator.itemgetter(1))
-    print value, moves[index*2 + 1]
+#    print value, moves[index*2 + 1]
     max_state = moves[index*2 + 1]
     next_legal_state(state, max_state)
 
@@ -31,32 +30,26 @@ def next_legal_state(parent, child):
 
 def minimax_max(state, depth):
     if depth == cutoff_depth:
-        print 'max end'
         return evaluate(state, 'max')
     value = float('-inf')
     next_moves = actions(state, 'max')
     for s in next_moves:
         if continue_move(state, s, 'max'):
-            print 'in the max continue'
             value = max(value, minimax_max(s, depth + 1))
         else:
-            print 'in the max else'            
             value = max(value, minimax_min(s, depth + 1))
     return value
 
 def minimax_min(state, depth):
     if depth == cutoff_depth:
-        print 'min end'
         return evaluate(state, 'min')
     value = float('inf')
     next_moves = actions(state, 'min')
     print state
     for s in next_moves:
         if continue_move(state, s, 'min'):
-            print 'in the min continue'            
             value = min(value, minimax_min(s, depth + 1))
         else:
-            print 'in the min else.'            
             value = min(value, minimax_max(s, depth + 1))
     return value
 
@@ -69,33 +62,21 @@ def evaluate(state, p_type):
 def continue_move(parent, child, p_type):
     if p_type == 'max':
         if my_player == 1:
-            print 'it is max 1'
             if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
-                print 'it is true'
                 return True
-            print 'it is false'
             return False
         elif my_player == 2:
-            print 'it is max 2'
             if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
-                print 'it is true'
                 return True
-            print 'it is false'
             return False
     elif p_type == 'min':
         if my_player == 1:
-            print 'it is min 1'            
             if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
-                print 'it is true'
                 return True
-                print 'it is false'
             return False
         elif my_player == 2:
-            print 'it is min 2'            
             if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
-                print 'it is true'
                 return True
-                print 'it is false'
             return False
     
 def actions(state, p_type):
@@ -164,12 +145,12 @@ def actions(state, p_type):
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
             action_set.reverse()
-                        
-#        print action_set
     return action_set
-    
-file = 'input.txt' #sys.argv[2]
-with open(file) as inputFile:
+
+
+wfile = open('output.txt', 'w')    
+rfile = 'input.txt' #sys.argv[2]
+with open(rfile) as inputFile:
     task = inputFile.readline().strip()
     my_player = int(inputFile.readline().strip())
     cutoff_depth = int(inputFile.readline().strip())
@@ -197,3 +178,4 @@ print state
 #print evaluate(state, 'min')
 
 minimax(state)
+wfile.close()
