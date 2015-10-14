@@ -44,6 +44,12 @@ def minimax_min(state, depth):
             value = min(value, minimax_max(s, depth + 1))
     return value
 
+def evaluate(state, p_type):
+    if my_player == 1:
+        return state[p1_mancala] - state[p2_mancala]
+    elif my_player == 2:
+        return state[p2_mancala] - state[p1_mancala]
+    
 def continue_move(parent, child, p_type):
     if p_type == 'max':
         if my_player == 1:
@@ -146,23 +152,6 @@ def actions(state, p_type):
 #        print action_set
     return action_set
     
-def evaluate(state, p_type):
-    if p_type == 'max':
-        if my_player == 1:
-#            print 'max p1'
-            return state[p1_mancala] - state[p2_mancala]
-        else:
-#            print 'max p2'
-            return state[p2_mancala] - state[p1_mancala]
-    else:
-        if my_player == 1:
-#            print 'min p1'
-            return state[p2_mancala] - state[p1_mancala]
-        else:
-#            print 'min p2'
-            return state[p1_mancala] - state[p2_mancala]
-    
-
 file = 'input.txt' #sys.argv[2]
 with open(file) as inputFile:
     task = inputFile.readline().strip()
