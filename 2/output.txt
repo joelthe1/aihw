@@ -1,35 +1,49 @@
-in here B2,1,-inf
+Node,Depth,Value
 B2,1,-inf
-in here B3,1,-inf
-leaf A2,2,1
-B3,1,1
-leaf A3,2,1
-B3,1,1
-leaf A4,2,1
-B3,1,1
+in min
+leafA2,2,-1
+B2,1,-1
+in min
+leafA3,2,-1
+B2,1,-1
+in min
+leafA4,2,0
+B2,1,0
+root,0,0
+doing this: max p1 true.
+B3,1,-inf
+B2,1,-inf
+in min
+leafA2,2,0
+B2,1,0
+in min
+leafA3,2,0
+B2,1,0
+in min
+leafA4,2,1
 B2,1,1
-in here B4,1,-inf
-leaf A2,2,1
+B3,1,1
+B4,1,-inf
+in min
+leafA2,2,1
 B4,1,1
-leaf A3,2,1
+in min
+leafA3,2,1
 B4,1,1
-leaf A4,2,1
+in min
+leafA4,2,1
 B4,1,1
-B2,1,1
+B3,1,1
 root,0,1
-in here B3,1,-inf
-leaf A2,2,0
-B3,1,0
-leaf A3,2,0
-B3,1,0
-leaf A4,2,0
-B3,1,0
-root,0,0
-in here B4,1,-inf
-leaf A2,2,0
+B4,1,-inf
+in min
+leafA2,2,0
 B4,1,0
-leaf A3,2,0
+in min
+leafA3,2,0
 B4,1,0
-leaf A4,2,0
+in min
+leafA4,2,0
 B4,1,0
-root,0,0
+root,0,1
+doing this: max p1 true.

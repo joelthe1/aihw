@@ -2,19 +2,18 @@ import operator
 
 def minimax(state):
     moves = []
+    max_root = float('-inf')
     next_moves = actions(state, 'max')
     print next_moves
     for index, s in enumerate(next_moves):
         if s: 
             continue_flag = continue_move(state, s, 'max')
-#                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
             temp = minimax_max(s, 1, index+2, continue_flag)
-#            else:
-#                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
-#                temp = minimax_min(s, 1, index+2)
-            wfile.write('root'+','+'0,'+str(temp)+'\n')
             moves.append(temp)
             moves.append(s)
+            if temp > max_root:
+                max_root = temp
+            wfile.write('root'+','+'0,'+str(max_root)+'\n')
     print moves
     scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
     i, value = max(enumerate(scoreArr), key=operator.itemgetter(1))
@@ -52,13 +51,14 @@ def minimax_max(state, depth, pit, continue_flag):
                 value = max(value, minimax_max(s, depth, index+2, state_continue_flag))
             else:
                 value = max(value, minimax_min(s, depth + 1, index+2, state_continue_flag))
-        wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
+            wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
 def minimax_min(state, depth, pit, continue_flag):
+    wfile.write('in min\n');
     if depth == cutoff_depth:
         leaf_value = evaluate(state)
-        wfile.write(oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
+        wfile.write('leaf'+oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('inf')
     wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
@@ -68,38 +68,40 @@ def minimax_min(state, depth, pit, continue_flag):
         next_moves = actions(state, 'max')
     for index, s in enumerate(next_moves):
         if s:
+            wfile.write('p: '+','.join(state)+' and c: '+', '.join(s)+'\n')
             state_continue_flag = continue_move(state, s, 'min')
             if continue_flag:
                 value = min(value, minimax_min(s, depth, index+2, state_continue_flag))
             else:
                 value = min(value, minimax_max(s, depth + 1, index+2, state_continue_flag))
-        wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
+            wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
 def evaluate(state):
     return state[p1_mancala] - state[p2_mancala]
-#    if my_player == 1:
-#        return state[p1_mancala] - state[p2_mancala]
-#    elif my_player == 2:
-#        return state[p2_mancala] - state[p1_mancala]
     
 def continue_move(parent, child, p_type):
     if p_type == 'max':
         if my_player == 1:
             if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
+                wfile.write('doing this: max p1 true.\n')
                 return True
             return False
         elif my_player == 2:
             if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
+                wfile.write('doing this: max p2 true.\n')                
                 return True
             return False
     elif p_type == 'min':
         if my_player == 1:
             if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
+                wfile.write('doing this: min p1 true.\n')
                 return True
+            wfile.write('doing this: min p1 false.\n')            
             return False
         elif my_player == 2:
             if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
+                wfile.write('doing this: min p2 true.\n')
                 return True
             return False
     
@@ -180,7 +182,8 @@ def actions(state, p_type):
     return action_set
 
 
-wfile = open('output.txt', 'w')    
+wfile = open('output.txt', 'w')
+wfile.write('Node,Depth,Value\n')    
 rfile = 'input.txt' #sys.argv[2]
 with open(rfile) as inputFile:
     task = inputFile.readline().strip()
@@ -213,6 +216,7 @@ if my_player == 2:
     
 
 print state
+print 'my player:', my_player
 #print p1_mancala
 #print p2_mancala
 
