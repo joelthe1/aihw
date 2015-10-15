@@ -1,0 +1,2 @@
+Case when player lands last coin on an empty pit of his own. His and the others coins go to the mancala.
+Case

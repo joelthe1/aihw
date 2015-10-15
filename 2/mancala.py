@@ -33,7 +33,7 @@ def next_legal_state(parent, child):
         print evaluate(child), child
 
 def minimax_max(state, depth, pit, continue_flag):
-    if depth == cutoff_depth:
+    if depth >= cutoff_depth and not continue_flag:
         leaf_value = evaluate(state)
         wfile.write(myChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
@@ -43,22 +43,25 @@ def minimax_max(state, depth, pit, continue_flag):
         next_moves = actions(state, 'max')
     else:
         next_moves = actions(state, 'min')
-    print next_moves
+#    print next_moves
     for index, s in enumerate(next_moves):
         if s:
-            state_continue_flag = continue_move(state, s, 'max')
             if continue_flag:
+                state_continue_flag = continue_move(state, s, 'max')
+                print 'this is', state, s, state_continue_flag                                
                 value = max(value, minimax_max(s, depth, index+2, state_continue_flag))
             else:
+                state_continue_flag = continue_move(state, s, 'min')
+                print 'this is', state, s, state_continue_flag                
                 value = max(value, minimax_min(s, depth + 1, index+2, state_continue_flag))
+
             wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
 def minimax_min(state, depth, pit, continue_flag):
-    wfile.write('in min\n');
-    if depth == cutoff_depth:
+    if depth >= cutoff_depth and not continue_flag:
         leaf_value = evaluate(state)
-        wfile.write('leaf'+oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
+        wfile.write(oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('inf')
     wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
@@ -68,11 +71,12 @@ def minimax_min(state, depth, pit, continue_flag):
         next_moves = actions(state, 'max')
     for index, s in enumerate(next_moves):
         if s:
-            wfile.write('p: '+','.join(state)+' and c: '+', '.join(s)+'\n')
-            state_continue_flag = continue_move(state, s, 'min')
+#            wfile.write('p: '+','.join(state)+' and c: '+', '.join(s)+'\n')
             if continue_flag:
+                state_continue_flag = continue_move(state, s, 'min')                
                 value = min(value, minimax_min(s, depth, index+2, state_continue_flag))
             else:
+                state_continue_flag = continue_move(state, s, 'max')                
                 value = min(value, minimax_max(s, depth + 1, index+2, state_continue_flag))
             wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
@@ -84,24 +88,24 @@ def continue_move(parent, child, p_type):
     if p_type == 'max':
         if my_player == 1:
             if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
-                wfile.write('doing this: max p1 true.\n')
+#                wfile.write('doing this: max p1 true.\n')
                 return True
             return False
         elif my_player == 2:
             if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
-                wfile.write('doing this: max p2 true.\n')                
+#                wfile.write('doing this: max p2 true.\n')                
                 return True
             return False
     elif p_type == 'min':
         if my_player == 1:
             if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
-                wfile.write('doing this: min p1 true.\n')
+#                wfile.write('doing this: min p1 true.\n')
                 return True
-            wfile.write('doing this: min p1 false.\n')            
+#            wfile.write('doing this: min p1 false.\n')            
             return False
         elif my_player == 2:
             if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
-                wfile.write('doing this: min p2 true.\n')
+#                wfile.write('doing this: min p2 true.\n')
                 return True
             return False
     
