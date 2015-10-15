@@ -1,20 +1,35 @@
-B2,1,-Infinity
+in here B2,1,-inf
 B2,1,-inf
-A3,2,2
-A4,2,2
-B2,1,2
-root,0,2
-B3,1,-Infinity
-A3,1,inf
-B2,2,0
-B3,2,0
-B4,2,0
-A3,1,0
+in here B3,1,-inf
+leaf A2,2,1
+B3,1,1
+leaf A3,2,1
+B3,1,1
+leaf A4,2,1
+B3,1,1
+B2,1,1
+in here B4,1,-inf
+leaf A2,2,1
+B4,1,1
+leaf A3,2,1
+B4,1,1
+leaf A4,2,1
+B4,1,1
+B2,1,1
+root,0,1
+in here B3,1,-inf
+leaf A2,2,0
+B3,1,0
+leaf A3,2,0
+B3,1,0
+leaf A4,2,0
+B3,1,0
 root,0,0
-B4,1,-Infinity
-A4,1,inf
-B2,2,0
-B3,2,0
-B4,2,0
-A4,1,0
+in here B4,1,-inf
+leaf A2,2,0
+B4,1,0
+leaf A3,2,0
+B4,1,0
+leaf A4,2,0
+B4,1,0
 root,0,0

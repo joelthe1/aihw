@@ -6,12 +6,12 @@ def minimax(state):
     print next_moves
     for index, s in enumerate(next_moves):
         if s: 
-            if continue_move(state, s, 'max'):
-                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
-                temp = minimax_max(s, 1, index+2)
-            else:
-                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
-                temp = minimax_min(s, 1, index+2)
+            continue_flag = continue_move(state, s, 'max')
+#                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
+            temp = minimax_max(s, 1, index+2, continue_flag)
+#            else:
+#                wfile.write(myChar+str(index+2)+','+'1,'+'-Infinity\n')
+#                temp = minimax_min(s, 1, index+2)
             wfile.write('root'+','+'0,'+str(temp)+'\n')
             moves.append(temp)
             moves.append(s)
@@ -31,49 +31,57 @@ def next_legal_state(parent, child):
                 next_legal_state(child, preq_s)
     if terminator == 0:
         terminator += 1
-        print evaluate(child, 'max'), child
+        print evaluate(child), child
 
-def minimax_max(state, depth, pit):
+def minimax_max(state, depth, pit, continue_flag):
     if depth == cutoff_depth:
-        leaf_value = evaluate(state, 'max')
+        leaf_value = evaluate(state)
         wfile.write(myChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('-inf')
     wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
-    next_moves = actions(state, 'max')
+    if continue_flag:
+        next_moves = actions(state, 'max')
+    else:
+        next_moves = actions(state, 'min')
     print next_moves
     for index, s in enumerate(next_moves):
         if s:
-            if continue_move(state, s, 'max'):
-                
-                value = max(value, minimax_max(s, depth, index+2))
+            state_continue_flag = continue_move(state, s, 'max')
+            if continue_flag:
+                value = max(value, minimax_max(s, depth, index+2, state_continue_flag))
             else:
-                value = max(value, minimax_min(s, depth + 1, index+2))
-    wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
+                value = max(value, minimax_min(s, depth + 1, index+2, state_continue_flag))
+        wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
-def minimax_min(state, depth, pit):
+def minimax_min(state, depth, pit, continue_flag):
     if depth == cutoff_depth:
-        leaf_value = evaluate(state, 'min')
+        leaf_value = evaluate(state)
         wfile.write(oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('inf')
     wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
-    next_moves = actions(state, 'min')
+    if continue_flag:
+        next_moves = actions(state, 'min')
+    else:
+        next_moves = actions(state, 'max')
     for index, s in enumerate(next_moves):
         if s:
-            if continue_move(state, s, 'min'):
-                value = min(value, minimax_min(s, depth, index+2))
+            state_continue_flag = continue_move(state, s, 'min')
+            if continue_flag:
+                value = min(value, minimax_min(s, depth, index+2, state_continue_flag))
             else:
-                value = min(value, minimax_max(s, depth + 1, index+2))
-    wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
+                value = min(value, minimax_max(s, depth + 1, index+2, state_continue_flag))
+        wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
-def evaluate(state, p_type):
-    if my_player == 1:
-        return state[p1_mancala] - state[p2_mancala]
-    elif my_player == 2:
-        return state[p2_mancala] - state[p1_mancala]
+def evaluate(state):
+    return state[p1_mancala] - state[p2_mancala]
+#    if my_player == 1:
+#        return state[p1_mancala] - state[p2_mancala]
+#    elif my_player == 2:
+#        return state[p2_mancala] - state[p1_mancala]
     
 def continue_move(parent, child, p_type):
     if p_type == 'max':
