@@ -150,7 +150,15 @@ def actions(state, p_type):
                     for y in range(coins):
                         if ((x+y+z)%(length)) == p1_mancala:
                             z += 1
-                            temp[(x+y+z)%(length)] += 1
+                        if y == coins-1:
+                            if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) > p1_mancala and ((x+y+z)%(length)) != p2_mancala:
+                                if temp[length-((x+y+z)%(length))-2] != 0:
+                                    temp[p2_mancala] += (temp[length-((x+y+z)%(length))-2] + 1)
+                                    temp[length-((x+y+z)%(length))-2] = 0
+                                else:
+                                    temp[(x+y+z)%(length)] += 1
+                            else:
+                                temp[(x+y+z)%(length)] += 1
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
@@ -169,7 +177,15 @@ def actions(state, p_type):
                     for y in range(coins):
                         if ((x+y+z)%(length)) == p2_mancala:
                             z += 1
-                            temp[(x+y+z)%(length)] += 1
+                        if y == coins-1:
+                            if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) < p1_mancala:
+                                if temp[-((x+y+z)%(length))-2] != 0:
+                                    temp[p1_mancala] += (temp[-((x+y+z)%(length))-2] + 1)
+                                    temp[-((x+y+z)%(length))-2] = 0
+                                else:
+                                    temp[(x+y+z)%(length)] += 1
+                            else:
+                                temp[(x+y+z)%(length)] += 1
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
@@ -186,7 +202,15 @@ def actions(state, p_type):
                     for y in range(coins):
                         if ((x+y+z)%(length)) == p1_mancala:
                             z += 1
-                            temp[(x+y+z)%(length)] += 1
+                        if y == coins-1:
+                            if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) > p1_mancala and ((x+y+z)%(length)) != p2_mancala:
+                                if temp[length-((x+y+z)%(length))-2] != 0:
+                                    temp[p2_mancala] += (temp[length-((x+y+z)%(length))-2] + 1)
+                                    temp[length-((x+y+z)%(length))-2] = 0
+                                else:
+                                    temp[(x+y+z)%(length)] += 1
+                            else:
+                                temp[(x+y+z)%(length)] += 1
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
