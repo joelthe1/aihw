@@ -1,2 +1,3 @@
 Case when player lands last coin on an empty pit of his own. His and the others coins go to the mancala.
-Case
+Case: Endgame condition with our last coin not going to our mancala.
+case: The traversal order for players 1 and 2 are different.

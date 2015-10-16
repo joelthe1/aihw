@@ -6,9 +6,12 @@ def minimax(state):
     next_moves = actions(state, 'max')
     print next_moves
     for index, s in enumerate(next_moves):
-        if s: 
+        if s:
             continue_flag = continue_move(state, s, 'max')
-            temp = minimax_max(s, 1, index+2, continue_flag)
+            if continue_flag:
+                temp = minimax_max(s, 1, index+2, continue_flag)
+            else:
+                temp = minimax_min(s, 1, index+2, continue_flag)
             moves.append(temp)
             moves.append(s)
             if temp > max_root:
@@ -54,7 +57,6 @@ def minimax_max(state, depth, pit, continue_flag):
                 state_continue_flag = continue_move(state, s, 'min')
                 print 'this is', state, s, state_continue_flag                
                 value = max(value, minimax_min(s, depth + 1, index+2, state_continue_flag))
-
             wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
@@ -123,7 +125,15 @@ def actions(state, p_type):
                     for y in range(coins):
                         if ((x+y+z)%(length)) == p2_mancala:
                             z += 1
-                            temp[(x+y+z)%(length)] += 1
+                        if y == coins-1:
+                            if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) < p1_mancala:
+                                if temp[-((x+y+z)%(length))-2] != 0:
+                                    temp[p1_mancala] += (temp[-((x+y+z)%(length))-2] + 1)
+                                    temp[-((x+y+z)%(length))-2] = 0
+                                else:
+                                    temp[(x+y+z)%(length)] += 1
+                            else:
+                                temp[(x+y+z)%(length)] += 1
                         else:
                             temp[(x+y+z)%(length)] += 1
                     action_set.append(temp)
@@ -203,6 +213,7 @@ p1_inp.append(p1_mancala_inp)
 p1 = [int(x) for x in p1_inp]
 
 p2_mancala = 0
+p2_inp.reverse()
 p2_inp.append(p2_mancala_inp)
 p2 = [int(x) for x in p2_inp]
 
@@ -224,8 +235,8 @@ print 'my player:', my_player
 #print p1_mancala
 #print p2_mancala
 
-#actions(state, 'max')
+print actions(state, 'max')
 #print evaluate(state, 'min')
 
-minimax(state)
+#minimax(state)
 wfile.close()
