@@ -9,9 +9,9 @@ def minimax(state):
         if s:
             continue_flag = continue_move(state, s, 'max')
             if continue_flag:
-                temp = minimax_max(s, 1, index+2, continue_flag)
+                temp = minimax_max(s, 1, index+2, my_player)
             else:
-                temp = minimax_min(s, 1, index+2, continue_flag)
+                temp = minimax_min(s, 1, index+2, my_player)
             moves.append(temp)
             moves.append(s)
             if temp > max_root:
@@ -35,34 +35,81 @@ def next_legal_state(parent, child):
         terminator += 1
         print evaluate(child), child
 
-def minimax_max(state, depth, pit, continue_flag):
-    if depth >= cutoff_depth and not continue_flag:
+def terminal_case(state, depth, p_type):
+#    if depth > cutoff_depth:
+#        return True
+    if depth == cutoff_depth:
+        next_moves = actions(state, p_type)
+        for s in next_moves:
+            if s:
+                continue_flag = continue_move(state, s, p_type)
+                if continue_flag == True:
+                    return False
+    elif depth < cutoff_depth:
+        return False
+    return True
+
+def endgame(state, p_type, player):
+    end_state = state[:]
+    if player == 1:
+        for x in range(p1_mancala + 1, p2_mancala):
+            end_state[p2_mancala] += end_state[x]
+            end_state[x] = 0
+        return end_state
+    else:
+        for x in range(p1_mancala):
+            end_state[p1_mancala] += end_state[x]
+            end_state[x] = 0
+        return end_state
+    
+def minimax_max(state, depth, pit, player):
+    if terminal_case(state, depth, 'max'):
         leaf_value = evaluate(state)
+        coins = 0
+        if player == 1:
+            for x in range(p1_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, my_player)
+                leaf_value = evaluate(end_state)
+        else:
+            for x in range(p1_mancala+1, p2_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, my_player)
+                leaf_value = evaluate(end_state)
         wfile.write(myChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('-inf')
     wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
-    if continue_flag:
-        next_moves = actions(state, 'max')
-    else:
-        next_moves = actions(state, 'min')
-#    print next_moves
     for index, s in enumerate(next_moves):
         if s:
-            if continue_flag:
-                state_continue_flag = continue_move(state, s, 'max')
-                print 'this is', state, s, state_continue_flag                                
-                value = max(value, minimax_max(s, depth, index+2, state_continue_flag))
+            continue_flag = continue_move(state, s, 'max')
+            if depth == cutoff_depth and continue_flag:
+                value = max(value, minimax_max(s, depth, index+2, player))
+            elif continue_flag:
+                value = max(value, minimax_max(s, depth, index+2, player))
             else:
-                state_continue_flag = continue_move(state, s, 'min')
-                print 'this is', state, s, state_continue_flag                
-                value = max(value, minimax_min(s, depth + 1, index+2, state_continue_flag))
+                value = max(value, minimax_min(s, depth + 1, index+2, 1 if player == 2 else 2))
             wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
-def minimax_min(state, depth, pit, continue_flag):
-    if depth >= cutoff_depth and not continue_flag:
+def minimax_min(state, depth, pit, player):
+    if terminal_case(state, depth, 'min'):
         leaf_value = evaluate(state)
+        coins = 0
+        if player == 1:
+            for x in range(p1_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, player)
+                leaf_value = evaluate(end_state)
+        else:
+            for x in range(p1_mancala+1, p2_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, player)
+                leaf_value = evaluate(end_state)
         wfile.write(oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('inf')
@@ -73,13 +120,13 @@ def minimax_min(state, depth, pit, continue_flag):
         next_moves = actions(state, 'max')
     for index, s in enumerate(next_moves):
         if s:
-#            wfile.write('p: '+','.join(state)+' and c: '+', '.join(s)+'\n')
-            if continue_flag:
-                state_continue_flag = continue_move(state, s, 'min')                
-                value = min(value, minimax_min(s, depth, index+2, state_continue_flag))
+            continue_flag = continue_move(state, s, 'min')
+            if depth == cutoff_depth and continue_flag:            
+                value = min(value, minimax_min(s, depth, index+2, player))
+            elif continue_flag:
+                value = min(value, minimax_min(s, depth, index+2, player))
             else:
-                state_continue_flag = continue_move(state, s, 'max')                
-                value = min(value, minimax_max(s, depth + 1, index+2, state_continue_flag))
+                value = min(value, minimax_max(s, depth + 1, index+2, 1 if player == 2 else 2))
             wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
@@ -248,10 +295,12 @@ terminator = 0
 
 myChar = 'B'
 oppChar = 'A'
+opp_player = 2
 
 if my_player == 2:
     myChar = 'A'
     oppChar = 'B'
+    opp_player = 1
     
 
 print state
