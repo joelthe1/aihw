@@ -5,6 +5,7 @@ def minimax(state):
     max_root = float('-inf')
     next_moves = actions(state, 'max')
     print 'in here', next_moves
+    wfile.write('root'+',0,-Infinity\n')    
     for index, s in enumerate(next_moves):
         if s:
             continue_flag = continue_move(state, s, 'max')
@@ -36,20 +37,16 @@ def next_legal_state(parent, child):
         terminator += 1
         print evaluate(child), child
 
-def terminal_case(state, depth, p_type):
+def terminal_case(state, depth, p_type, continued):
 #    if depth > cutoff_depth:
 #        return True
     print 'in terminal_case'
-    print state, depth,p_type
+    print state, depth,p_type, continued
     if depth == cutoff_depth:
-        return True #Short circuited for now.
-        next_moves = actions(state, p_type)
-        for s in next_moves:
-            if s:
-                continue_flag = continue_move(state, s, p_type)
-                if continue_flag == True:
-                    print 'returning false from terminal'
-                    return False
+        if continued:
+            return False
+        else:
+            return True
     elif depth < cutoff_depth:
         print 'returning false from terminal'
         return False
@@ -71,10 +68,10 @@ def endgame(state, p_type, player):
     
 def minimax_max(state, depth, pit, player, parent_continues):
     print 'in max and state = ', state
-    player_char = 'b' if player == 1 else 'a'
+    player_char = 'B' if player == 1 else 'A'
     next_moves = actions(state, 'max')    
     print player,player_char,pit, depth, next_moves
-    if terminal_case(state, depth, 'max'):
+    if terminal_case(state, depth, 'max', parent_continues):
         leaf_value = evaluate(state)
         coins = 0
         if player == 1:
@@ -117,10 +114,11 @@ def minimax_max(state, depth, pit, player, parent_continues):
 
 def minimax_min(state, depth, pit, player, parent_continues):
     print 'in min and state = ', state
-    player_char = 'b' if player == 1 else 'a'
+    player_char = 'B' if player == 1 else 'A'
     next_moves = actions(state, 'min')
     print player,player_char, depth,pit, next_moves
-    if terminal_case(state, depth, 'min'):
+    print 'parent continues = ', parent_continues
+    if terminal_case(state, depth, 'min', parent_continues):
         leaf_value = evaluate(state)
         coins = 0
         if player == 1:
