@@ -4,14 +4,15 @@ def minimax(state):
     moves = []
     max_root = float('-inf')
     next_moves = actions(state, 'max')
-    print next_moves
+    print 'in here', next_moves
     for index, s in enumerate(next_moves):
         if s:
             continue_flag = continue_move(state, s, 'max')
             if continue_flag:
-                temp = minimax_max(s, 1, index+2, my_player)
+                print 'contiuing.',s
+                temp = minimax_max(s, 1, index+2, my_player, continue_flag)
             else:
-                temp = minimax_min(s, 1, index+2, my_player)
+                temp = minimax_min(s, 1, index+2, my_player, continue_flag)
             moves.append(temp)
             moves.append(s)
             if temp > max_root:
@@ -19,7 +20,7 @@ def minimax(state):
             wfile.write('root'+','+'0,'+str(max_root)+'\n')
     print moves
     scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
-    i, value = max(enumerate(scoreArr), key=operator.itemgetter(1))
+    i, value = max(enumerate(scoreArr), key=operator.itemgetter(1)) #breaks for 0 0 0 input.
     print value, moves[i*2 + 1]
     max_state = moves[i*2 + 1]
     next_legal_state(state, max_state)
@@ -38,15 +39,21 @@ def next_legal_state(parent, child):
 def terminal_case(state, depth, p_type):
 #    if depth > cutoff_depth:
 #        return True
+    print 'in terminal_case'
+    print state, depth,p_type
     if depth == cutoff_depth:
+        return True #Short circuited for now.
         next_moves = actions(state, p_type)
         for s in next_moves:
             if s:
                 continue_flag = continue_move(state, s, p_type)
                 if continue_flag == True:
+                    print 'returning false from terminal'
                     return False
     elif depth < cutoff_depth:
+        print 'returning false from terminal'
         return False
+    print 'returning true from terminal'
     return True
 
 def endgame(state, p_type, player):
@@ -62,7 +69,11 @@ def endgame(state, p_type, player):
             end_state[x] = 0
         return end_state
     
-def minimax_max(state, depth, pit, player):
+def minimax_max(state, depth, pit, player, parent_continues):
+    print 'in max and state = ', state
+    player_char = 'b' if player == 1 else 'a'
+    next_moves = actions(state, 'max')    
+    print player,player_char,pit, depth, next_moves
     if terminal_case(state, depth, 'max'):
         leaf_value = evaluate(state)
         coins = 0
@@ -78,23 +89,37 @@ def minimax_max(state, depth, pit, player):
             if coins == 0:
                 end_state = endgame(state, my_player)
                 leaf_value = evaluate(end_state)
-        wfile.write(myChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
+        print 'leaf in max', leaf_value
+        wfile.write(player_char+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('-inf')
-    wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
+    wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
+    if parent_continues:
+        print 'parent_continues is true.', parent_continues
+        child_depth = depth
+    else:
+        child_depth = depth + 1
+        player = 1 if player == 2 else 2
     for index, s in enumerate(next_moves):
         if s:
-            continue_flag = continue_move(state, s, 'max')
+            continue_flag = continue_move(state, s, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
-                value = max(value, minimax_max(s, depth, index+2, player))
+                print 'in here',value, s, child_depth, index+2, player
+                value = max(value, minimax_max(s, child_depth, index+2, player, True))
             elif continue_flag:
-                value = max(value, minimax_max(s, depth, index+2, player))
+                print 'in here too',value, s, depth, index+2, player
+                value = max(value, minimax_max(s, child_depth, index+2, player, True))
             else:
-                value = max(value, minimax_min(s, depth + 1, index+2, 1 if player == 2 else 2))
-            wfile.write(myChar+str(pit)+','+str(depth)+','+str(value)+'\n')
+                print 'doing min.',value, s, child_depth, index+2, player
+                value = max(value, minimax_min(s, child_depth, index+2, player, False))
+            wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
-def minimax_min(state, depth, pit, player):
+def minimax_min(state, depth, pit, player, parent_continues):
+    print 'in min and state = ', state
+    player_char = 'b' if player == 1 else 'a'
+    next_moves = actions(state, 'min')
+    print player,player_char, depth,pit, next_moves
     if terminal_case(state, depth, 'min'):
         leaf_value = evaluate(state)
         coins = 0
@@ -110,28 +135,37 @@ def minimax_min(state, depth, pit, player):
             if coins == 0:
                 end_state = endgame(state, player)
                 leaf_value = evaluate(end_state)
-        wfile.write(oppChar+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
+        wfile.write(player_char+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
+        print ('leaf in min')
         return leaf_value
     value = float('inf')
-    wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
-    if continue_flag:
-        next_moves = actions(state, 'min')
+    wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
+    print 'min', next_moves
+    if parent_continues:
+        print 'parent_continues is true.', parent_continues
+        child_depth = depth
     else:
-        next_moves = actions(state, 'max')
+        child_depth = depth + 1
+        player = 1 if player == 2 else 2
+        print 'new depth and player', depth, player
     for index, s in enumerate(next_moves):
         if s:
-            continue_flag = continue_move(state, s, 'min')
-            if depth == cutoff_depth and continue_flag:            
-                value = min(value, minimax_min(s, depth, index+2, player))
+            continue_flag = continue_move(state, s, 'max' if player == my_player else 'min')
+            if depth == cutoff_depth and continue_flag:
+                value = min(value, minimax_min(s, child_depth, index+2, player, True))
             elif continue_flag:
-                value = min(value, minimax_min(s, depth, index+2, player))
+                value = min(value, minimax_min(s, child_depth, index+2, player, True))
             else:
-                value = min(value, minimax_max(s, depth + 1, index+2, 1 if player == 2 else 2))
-            wfile.write(oppChar+str(pit)+','+str(depth)+','+str(value)+'\n')
+                print 'in min and no continue_move'
+                value = min(value, minimax_max(s, child_depth, index+2, player, False))
+            wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
 def evaluate(state):
-    return state[p1_mancala] - state[p2_mancala]
+    if my_player == 1:
+        return state[p1_mancala] - state[p2_mancala]
+    else:
+        return state[p2_mancala] - state[p1_mancala]
     
 def continue_move(parent, child, p_type):
     if p_type == 'max':
@@ -308,8 +342,8 @@ print 'my player:', my_player
 #print p1_mancala
 #print p2_mancala
 
-print actions(state, 'max')
+#print actions(state, 'max')
 #print evaluate(state, 'min')
 
-#minimax(state)
+minimax(state)
 wfile.close()
