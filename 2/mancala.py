@@ -8,7 +8,7 @@ def minimax(state):
     wfile.write('root'+',0,-Infinity\n')    
     for index, s in enumerate(next_moves):
         if s:
-            continue_flag = continue_move(state, s, 'max')
+            continue_flag = continue_move(state, index, 'max')
             if continue_flag:
                 print 'contiuing.',s
                 temp = minimax_max(s, 1, index+2, my_player, continue_flag)
@@ -24,7 +24,7 @@ def minimax(state):
     i, value = max(enumerate(scoreArr), key=operator.itemgetter(1)) #breaks for 0 0 0 input.
     print value, moves[i*2 + 1]
     max_state = moves[i*2 + 1]
-    next_legal_state(state, max_state)
+#    next_legal_state(state, max_state)
 
 def next_legal_state(parent, child):
     global terminator
@@ -38,14 +38,13 @@ def next_legal_state(parent, child):
         print evaluate(child), child
 
 def terminal_case(state, depth, p_type, continued):
-#    if depth > cutoff_depth:
-#        return True
     print 'in terminal_case'
     print state, depth,p_type, continued
     if depth == cutoff_depth:
         if continued:
             return False
         else:
+            wfile.write('')
             return True
     elif depth < cutoff_depth:
         print 'returning false from terminal'
@@ -98,11 +97,9 @@ def minimax_max(state, depth, pit, player, parent_continues):
                 leaf_value = evaluate(end_state)
         print 'leaf in max', leaf_value
         write_out(player, pit, depth, leaf_value)
-#        wfile.write(player_char+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         return leaf_value
     value = float('-inf')
     write_out(player, pit, depth, value)    
-#    wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
     if parent_continues:
         print 'parent_continues is true.', parent_continues
         child_depth = depth
@@ -111,7 +108,7 @@ def minimax_max(state, depth, pit, player, parent_continues):
         player = 1 if player == 2 else 2
     for index, s in enumerate(next_moves):
         if s:
-            continue_flag = continue_move(state, s, 'max' if player == my_player else 'min')
+            continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
                 print 'in here',value, s, child_depth, index+2, player
                 value = max(value, minimax_max(s, child_depth, index+2, player, True))
@@ -148,12 +145,10 @@ def minimax_min(state, depth, pit, player, parent_continues):
                 end_state = endgame(state, player)
                 leaf_value = evaluate(end_state)
         write_out(player, pit, depth, leaf_value)    
-#        wfile.write(player_char+str(pit)+','+str(depth)+','+str(leaf_value)+'\n')
         print ('leaf in min')
         return leaf_value
     value = float('inf')
     write_out(player, pit, depth, value)    
-#    wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
     print 'min', next_moves
     if parent_continues:
         print 'parent_continues is true.', parent_continues
@@ -164,7 +159,7 @@ def minimax_min(state, depth, pit, player, parent_continues):
         print 'new depth and player', depth, player
     for index, s in enumerate(next_moves):
         if s:
-            continue_flag = continue_move(state, s, 'max' if player == my_player else 'min')
+            continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
                 value = min(value, minimax_min(s, child_depth, index+2, player, True))
             elif continue_flag:
@@ -173,7 +168,6 @@ def minimax_min(state, depth, pit, player, parent_continues):
                 print 'in min and no continue_move'
                 value = min(value, minimax_max(s, child_depth, index+2, player, False))
             write_out(passed_player, pit, depth, value)
-#            wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
     return value
 
 def evaluate(state):
@@ -182,30 +176,60 @@ def evaluate(state):
     else:
         return state[p2_mancala] - state[p1_mancala]
     
-def continue_move(parent, child, p_type):
+def continue_move(parent, index, p_type):
+    length = p2_mancala + 1    
     if p_type == 'max':
         if my_player == 1:
-            if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
-#                wfile.write('doing this: max p1 true.\n')
+            z = 1
+            pos = 0
+            for x in range(parent[index]):
+                if ((index+x+z)%(length)) == p2_mancala:
+                    z += 1
+                pos = ((index+x+z)%(length))
+            if pos == p1_mancala:
                 return True
+                print 'p1_mancalad.'
             return False
-        elif my_player == 2:
-            if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
-#                wfile.write('doing this: max p2 true.\n')                
+            print pos
+        else:
+            z = 1
+            pos = 0
+            print p2_mancala-index-1
+            for x in range(parent[p2_mancala-index-1]):
+                if ((p2_mancala-index+x+z-1)%(length)) == p1_mancala:
+                    z += 1
+                pos = ((p2_mancala-index+x+z-1)%(length))
+            if pos == p2_mancala:
                 return True
+                print 'p2_mancalad.'
             return False
+            print pos
     elif p_type == 'min':
-        if my_player == 1:
-            if ((child[p2_mancala] - parent[p2_mancala]) - (child[0] - parent[0])) == 1:
-#                wfile.write('doing this: min p1 true.\n')
+        if my_player == 2:
+            z = 1
+            pos = 0
+            for x in range(parent[index]):
+                if ((index+x+z)%(length)) == p2_mancala:
+                    z += 1
+                pos = ((index+x+z)%(length))
+            if pos == p1_mancala:
                 return True
-#            wfile.write('doing this: min p1 false.\n')            
+                print 'p1_mancalad.'
             return False
-        elif my_player == 2:
-            if ((child[p1_mancala] - parent[p1_mancala]) - (child[p1_mancala+1] - parent[p1_mancala+1])) == 1:
-#                wfile.write('doing this: min p2 true.\n')
+            print pos
+        else:
+            z = 1
+            pos = 0
+            print p2_mancala-index-1
+            for x in range(parent[p2_mancala-index-1]):
+                if ((p2_mancala-index+x+z-1)%(length)) == p1_mancala:
+                    z += 1
+                pos = ((p2_mancala-index+x+z-1)%(length))
+            if pos == p2_mancala:
                 return True
+                print 'p2_mancalad.'
             return False
+            print pos
     
 def actions(state, p_type):
     length = p2_mancala + 1
@@ -223,11 +247,8 @@ def actions(state, p_type):
                             z += 1
                         if y == coins-1:
                             if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) < p1_mancala:
-                                if temp[-((x+y+z)%(length))-2] != 0:
-                                    temp[p1_mancala] += (temp[-((x+y+z)%(length))-2] + 1)
-                                    temp[-((x+y+z)%(length))-2] = 0
-                                else:
-                                    temp[(x+y+z)%(length)] += 1
+                                temp[p1_mancala] += (temp[-((x+y+z)%(length))-2] + 1)
+                                temp[-((x+y+z)%(length))-2] = 0
                             else:
                                 temp[(x+y+z)%(length)] += 1
                         else:
@@ -248,11 +269,8 @@ def actions(state, p_type):
                             z += 1
                         if y == coins-1:
                             if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) > p1_mancala and ((x+y+z)%(length)) != p2_mancala:
-                                if temp[length-((x+y+z)%(length))-2] != 0:
-                                    temp[p2_mancala] += (temp[length-((x+y+z)%(length))-2] + 1)
-                                    temp[length-((x+y+z)%(length))-2] = 0
-                                else:
-                                    temp[(x+y+z)%(length)] += 1
+                                temp[p2_mancala] += (temp[length-((x+y+z)%(length))-2] + 1)
+                                temp[length-((x+y+z)%(length))-2] = 0
                             else:
                                 temp[(x+y+z)%(length)] += 1
                         else:
@@ -275,11 +293,8 @@ def actions(state, p_type):
                             z += 1
                         if y == coins-1:
                             if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) < p1_mancala:
-                                if temp[-((x+y+z)%(length))-2] != 0:
-                                    temp[p1_mancala] += (temp[-((x+y+z)%(length))-2] + 1)
-                                    temp[-((x+y+z)%(length))-2] = 0
-                                else:
-                                    temp[(x+y+z)%(length)] += 1
+                                temp[p1_mancala] += (temp[-((x+y+z)%(length))-2] + 1)
+                                temp[-((x+y+z)%(length))-2] = 0
                             else:
                                 temp[(x+y+z)%(length)] += 1
                         else:
@@ -300,11 +315,8 @@ def actions(state, p_type):
                             z += 1
                         if y == coins-1:
                             if temp[(x+y+z)%(length)] == 0 and ((x+y+z)%(length)) > p1_mancala and ((x+y+z)%(length)) != p2_mancala:
-                                if temp[length-((x+y+z)%(length))-2] != 0:
-                                    temp[p2_mancala] += (temp[length-((x+y+z)%(length))-2] + 1)
-                                    temp[length-((x+y+z)%(length))-2] = 0
-                                else:
-                                    temp[(x+y+z)%(length)] += 1
+                                temp[p2_mancala] += (temp[length-((x+y+z)%(length))-2] + 1)
+                                temp[length-((x+y+z)%(length))-2] = 0
                             else:
                                 temp[(x+y+z)%(length)] += 1
                         else:
@@ -354,11 +366,6 @@ if my_player == 2:
 
 print state
 print 'my player:', my_player
-#print p1_mancala
-#print p2_mancala
-
-#print actions(state, 'max')
-#print evaluate(state, 'min')
 
 minimax(state)
 wfile.close()
