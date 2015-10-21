@@ -1,7 +1,9 @@
 import operator
 
 def minimax(state):
+    global path
     moves = []
+    paths = []
     max_root = float('-inf')
     next_moves = actions(state, 'max')
     print 'in here', next_moves
@@ -19,13 +21,43 @@ def minimax(state):
             if temp > max_root:
                 max_root = temp
             wfile.write('root'+','+'0,'+str(max_root)+'\n')
+            temp = path[:]
+            temp.reverse()
+            paths.append(temp)
+            path = []
     print moves
+    print len(paths)
+    print paths
     scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
     i, value = max(enumerate(scoreArr), key=operator.itemgetter(1)) #breaks for 0 0 0 input.
+    print_node = moves[i*2 + 1]
+    for node in paths[i]:
+        if node['player'] != my_player:
+            break
+        print node
+        children = actions(print_node, 'max')
+        for index, s in enumerate(children):
+            if s:
+                if index+2 == node['move']:
+                    print_node = s
+    writeout_next_file(print_node)
+    print 'final move', print_node
     print value, moves[i*2 + 1]
     max_state = moves[i*2 + 1]
 #    next_legal_state(state, max_state)
 
+def writeout_next_file(state):
+    y = -2
+    for x in range(p1_mancala+1, p2_mancala):
+        nfile.write(str(state[y]) + ' ')
+        y -= 1
+    nfile.write('\n')
+    for x in range(p1_mancala):
+        nfile.write(str(state[x]) + ' ')
+    nfile.write('\n')
+    nfile.write(str(state[p2_mancala]) + '\n')
+    nfile.write(str(state[p1_mancala]) + '\n')
+    
 def next_legal_state(parent, child):
     global terminator
     if continue_move(parent, child, 'max'):
@@ -75,7 +107,9 @@ def write_out(player, pit, depth, value):
         wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
         
 def minimax_max(state, depth, pit, player, parent_continues):
+    global path
     print 'in max and state = ', state
+    my_values = {}
     passed_player = player
     player_char = 'B' if player == 1 else 'A'
     next_moves = actions(state, 'max')    
@@ -97,8 +131,13 @@ def minimax_max(state, depth, pit, player, parent_continues):
                 leaf_value = evaluate(end_state)
         print 'leaf in max', leaf_value
         write_out(player, pit, depth, leaf_value)
+        my_values['value'] = leaf_value
+        my_values['player'] = player
+        my_values['pit'] = pit
+        path.append(my_values)
         return leaf_value
     value = float('-inf')
+    my_values['value'] = value
     write_out(player, pit, depth, value)    
     if parent_continues:
         print 'parent_continues is true.', parent_continues
@@ -111,19 +150,36 @@ def minimax_max(state, depth, pit, player, parent_continues):
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
                 print 'in here',value, s, child_depth, index+2, player
+                temp = value
                 value = max(value, minimax_max(s, child_depth, index+2, player, True))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
             elif continue_flag:
                 print 'in here too',value, s, depth, index+2, player
+                temp = value
                 value = max(value, minimax_max(s, child_depth, index+2, player, True))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
             else:
                 print 'doing min.',value, s, child_depth, index+2, player
+                temp = value
                 value = max(value, minimax_min(s, child_depth, index+2, player, False))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
             write_out(passed_player, pit, depth, value)                    
-#            wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
+    path.append(my_values)
     return value
 
 def minimax_min(state, depth, pit, player, parent_continues):
+    global path
     print 'in min and state = ', state
+    my_values = {}
     player_char = 'B' if player == 1 else 'A'
     passed_player = player
     next_moves = actions(state, 'min')
@@ -144,30 +200,51 @@ def minimax_min(state, depth, pit, player, parent_continues):
             if coins == 0:
                 end_state = endgame(state, player)
                 leaf_value = evaluate(end_state)
-        write_out(player, pit, depth, leaf_value)    
+        write_out(player, pit, depth, leaf_value)
+        my_values['value'] = leaf_value
+        my_values['player'] = player
+        my_values['pit'] = pit
+        path.append(my_values)
         print ('leaf in min')
         return leaf_value
     value = float('inf')
+    my_values['value'] = value
     write_out(player, pit, depth, value)    
-    print 'min', next_moves
     if parent_continues:
         print 'parent_continues is true.', parent_continues
         child_depth = depth
     else:
         child_depth = depth + 1
         player = 1 if player == 2 else 2
-        print 'new depth and player', depth, player
     for index, s in enumerate(next_moves):
         if s:
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
+                print 'in here',value, s, child_depth, index+2, player
+                temp = value
                 value = min(value, minimax_min(s, child_depth, index+2, player, True))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
             elif continue_flag:
+                print 'in here too',value, s, depth, index+2, player
+                temp = value
                 value = min(value, minimax_min(s, child_depth, index+2, player, True))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
             else:
-                print 'in min and no continue_move'
+                print 'doing min.',value, s, child_depth, index+2, player
+                temp = value
                 value = min(value, minimax_max(s, child_depth, index+2, player, False))
-            write_out(passed_player, pit, depth, value)
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
+            write_out(passed_player, pit, depth, value)                    
+    path.append(my_values)
     return value
 
 def evaluate(state):
@@ -327,7 +404,7 @@ def actions(state, p_type):
             action_set.reverse()
     return action_set
 
-
+nfile = open('next_state.txt', 'w')
 wfile = open('output.txt', 'w')
 wfile.write('Node,Depth,Value\n')    
 rfile = 'input.txt' #sys.argv[2]
@@ -353,6 +430,7 @@ state = p1 + p2
 p2_mancala = len(state) - 1
 
 terminator = 0
+path = []
 
 myChar = 'B'
 oppChar = 'A'
@@ -369,3 +447,4 @@ print 'my player:', my_player
 
 minimax(state)
 wfile.close()
+nfile.close()
