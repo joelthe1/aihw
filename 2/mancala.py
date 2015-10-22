@@ -1,5 +1,210 @@
 import operator
 
+def alphabeta(state):
+    global path
+    moves = []
+    paths = []
+    alpha = float('-inf')
+    beta = float('inf')
+    max_root = float('-inf')
+    next_moves = actions(state, 'max')
+    print 'in here', next_moves
+    wfile.write('root'+',0,-Infinity,-Infinity,Infinity\n')    
+    for index, s in enumerate(next_moves):
+        if s:
+            continue_flag = continue_move(state, index, 'max')
+            if continue_flag:
+                print 'contiuing.',s
+                temp = alphabeta_max(s, 1, index+2, my_player, continue_flag, alpha, beta)
+            else:
+                temp = alphabeta_min(s, 1, index+2, my_player, continue_flag, alpha, beta)
+            moves.append(temp)
+            moves.append(s)
+            if temp > max_root:
+                max_root = temp
+            temp = path[:]
+            temp.reverse()
+            paths.append(temp)
+            path = []
+            if max_root >= beta:
+                write_out_alphabeta('root', 0, 0, max_root, alpha, beta)
+#                wfile.write('root'+','+'0,'+str(max_root)+','+str(alpha)+','+str(beta)+'\n')
+                break
+            alpha = max(alpha, max_root)
+            write_out_alphabeta('root', 0, 0, max_root, alpha, beta)
+#            wfile.write('root'+','+'0,'+str(max_root)+','+str(alpha)+','+str(beta)+'\n')            
+    print moves
+    print len(paths)
+    print paths
+    scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
+    i, value = max(enumerate(scoreArr), key=operator.itemgetter(1)) #breaks for 0 0 0 input.
+    print_node = moves[i*2 + 1]
+    for node in paths[i]:
+        if node['player'] != my_player:
+            break
+        print node
+        children = actions(print_node, 'max')
+        for index, s in enumerate(children):
+            if s:
+                if index+2 == node['move']:
+                    print_node = s
+    writeout_next_file(print_node)
+    print 'final move', print_node
+    print value, moves[i*2 + 1]
+    max_state = moves[i*2 + 1]
+#    next_legal_state(state, max_state)
+
+def alphabeta_max(state, depth, pit, player, parent_continues, alpha, beta):
+    global path
+    print 'in max and state = ', state
+    my_values = {}
+    passed_player = player
+    player_char = 'B' if player == 1 else 'A'
+    next_moves = actions(state, 'max')
+    print player,player_char,pit, depth, next_moves
+    if terminal_case(state, depth, 'max', parent_continues):
+        leaf_value = evaluate(state)
+        coins = 0
+        if player == 1:
+            for x in range(p1_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, my_player)
+                leaf_value = evaluate(end_state)
+        else:
+            for x in range(p1_mancala+1, p2_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, my_player)
+                leaf_value = evaluate(end_state)
+        print 'leaf in max', leaf_value
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
+#        write_out(player, pit, depth, leaf_value)
+        my_values['value'] = leaf_value
+        my_values['player'] = player
+        my_values['pit'] = pit
+        path.append(my_values)
+        return leaf_value
+    value = float('-inf')
+    my_values['value'] = value
+    write_out_alphabeta(player, pit, depth, value, alpha, beta)
+    if parent_continues:
+        print 'parent_continues is true.', parent_continues
+        child_depth = depth
+    else:
+        child_depth = depth + 1
+        player = 1 if player == 2 else 2
+    for index, s in enumerate(next_moves):
+        if s:
+            continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
+            if depth == cutoff_depth and continue_flag:
+                print 'in here',value, s, child_depth, index+2, player
+                temp = value
+                value = max(value, alphabeta_max(s, child_depth, index+2, player, True, alpha, beta))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
+            elif continue_flag:
+                print 'in here too',value, s, depth, index+2, player
+                temp = value
+                value = max(value, alphabeta_max(s, child_depth, index+2, player, True, alpha, beta))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
+            else:
+                print 'doing min.',value, s, child_depth, index+2, player
+                temp = value
+                value = max(value, alphabeta_min(s, child_depth, index+2, player, False, alpha, beta))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
+            if value >= beta:
+                write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
+                return value
+            alpha = max(alpha, value)
+            write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
+    path.append(my_values)
+    return value
+
+def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
+    global path
+    print 'in min and state = ', state
+    my_values = {}
+    player_char = 'B' if player == 1 else 'A'
+    passed_player = player
+    next_moves = actions(state, 'min')
+    print player,player_char, depth,pit, next_moves
+    print 'parent continues = ', parent_continues
+    if terminal_case(state, depth, 'min', parent_continues):
+        leaf_value = evaluate(state)
+        coins = 0
+        if player == 1:
+            for x in range(p1_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, player)
+                leaf_value = evaluate(end_state)
+        else:
+            for x in range(p1_mancala+1, p2_mancala):
+                coins += state[x]
+            if coins == 0:
+                end_state = endgame(state, player)
+                leaf_value = evaluate(end_state)
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
+        my_values['value'] = leaf_value
+        my_values['player'] = player
+        my_values['pit'] = pit
+        path.append(my_values)
+        print ('leaf in min')
+        return leaf_value
+    value = float('inf')
+    my_values['value'] = value
+    write_out_alphabeta(player, pit, depth, value, alpha, beta)
+    if parent_continues:
+        print 'parent_continues is true.', parent_continues
+        child_depth = depth
+    else:
+        child_depth = depth + 1
+        player = 1 if player == 2 else 2
+    for index, s in enumerate(next_moves):
+        if s:
+            continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
+            if depth == cutoff_depth and continue_flag:
+                print 'in here',value, s, child_depth, index+2, player
+                temp = value
+                value = min(value, alphabeta_min(s, child_depth, index+2, player, True, alpha, beta))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
+            elif continue_flag:
+                print 'in here too',value, s, depth, index+2, player
+                temp = value
+                value = min(value, alphabeta_min(s, child_depth, index+2, player, True, alpha, beta))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
+            else:
+                print 'doing min.',value, s, child_depth, index+2, player
+                temp = value
+                value = min(value, alphabeta_max(s, child_depth, index+2, player, False, alpha, beta))
+                if temp != value:
+                    my_values['value'] = value
+                    my_values['player'] = player
+                    my_values['move'] = index+2
+            if value <= alpha:
+                write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
+                return value
+            beta = min(beta, value)
+            write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
+#            write_out(passed_player, pit, depth, value)                    
+    path.append(my_values)
+    return value
+
 def minimax(state):
     global path
     moves = []
@@ -105,7 +310,27 @@ def write_out(player, pit, depth, value):
         wfile.write(player_char+str(pit)+','+str(depth)+',-Infinity\n')
     else:
         wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+'\n')
-        
+
+def write_out_alphabeta(player, pit, depth, value, alpha, beta):
+    player_char = 'B' if player == 1 else 'A'
+    if player == 'root':
+        player_char = 'root'
+        pit = ''
+    if alpha == float('inf'):
+        alpha = 'Infinity'
+    elif alpha == float('-inf'):
+        alpha = '-Infinity'
+    if beta == float('inf'):
+        beta = 'Infinity'
+    elif beta == float('-inf'):
+        beta = '-Infinity'
+    if value == float('inf'):
+        wfile.write(player_char+str(pit)+','+str(depth)+',Infinity,'+str(alpha)+','+str(beta)+'\n')
+    elif value == float('-inf'):
+        wfile.write(player_char+str(pit)+','+str(depth)+',-Infinity,'+str(alpha)+','+str(beta)+'\n')
+    else:
+        wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+','+str(alpha)+','+str(beta)+'\n')
+                
 def minimax_max(state, depth, pit, player, parent_continues):
     global path
     print 'in max and state = ', state
@@ -406,10 +631,9 @@ def actions(state, p_type):
 
 nfile = open('next_state.txt', 'w')
 wfile = open('output.txt', 'w')
-wfile.write('Node,Depth,Value\n')    
 rfile = 'input.txt' #sys.argv[2]
 with open(rfile) as inputFile:
-    task = inputFile.readline().strip()
+    task = int(inputFile.readline().strip())
     my_player = int(inputFile.readline().strip())
     cutoff_depth = int(inputFile.readline().strip())
     p2_inp = inputFile.readline().strip().split(' ')
@@ -440,11 +664,29 @@ if my_player == 2:
     myChar = 'A'
     oppChar = 'B'
     opp_player = 1
-    
 
 print state
 print 'my player:', my_player
 
-minimax(state)
+if task == 1:
+    wfile.write('Node,Depth,Value\n')
+    cutoff_depth = 1
+    minimax(state)
+elif task == 2:
+    wfile.write('Node,Depth,Value\n')
+    minimax(state)
+elif task == 3:
+    wfile.write('Node,Depth,Value,Alpha,Beta\n')
+    alphabeta(state)
+    
 wfile.close()
 nfile.close()
+
+
+
+
+
+
+
+
+
