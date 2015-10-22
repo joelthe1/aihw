@@ -27,9 +27,12 @@ def alphabeta(state):
             paths.append(temp)
             path = []
             if max_root >= beta:
+                write_out_alphabeta('root', 0, 0, max_root, alpha, beta)
+#                wfile.write('root'+','+'0,'+str(max_root)+','+str(alpha)+','+str(beta)+'\n')
                 break
             alpha = max(alpha, max_root)
-            wfile.write('root'+','+'0,'+str(max_root)+','+str(alpha)+','+str(beta)+'\n')            
+            write_out_alphabeta('root', 0, 0, max_root, alpha, beta)
+#            wfile.write('root'+','+'0,'+str(max_root)+','+str(alpha)+','+str(beta)+'\n')            
     print moves
     print len(paths)
     print paths
@@ -119,6 +122,7 @@ def alphabeta_max(state, depth, pit, player, parent_continues, alpha, beta):
                     my_values['player'] = player
                     my_values['move'] = index+2
             if value >= beta:
+                write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
                 return value
             alpha = max(alpha, value)
             write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
@@ -193,6 +197,7 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
                     my_values['player'] = player
                     my_values['move'] = index+2
             if value <= alpha:
+                write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
                 return value
             beta = min(beta, value)
             write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
@@ -308,6 +313,9 @@ def write_out(player, pit, depth, value):
 
 def write_out_alphabeta(player, pit, depth, value, alpha, beta):
     player_char = 'B' if player == 1 else 'A'
+    if player == 'root':
+        player_char = 'root'
+        pit = ''
     if alpha == float('inf'):
         alpha = 'Infinity'
     elif alpha == float('-inf'):
@@ -623,10 +631,9 @@ def actions(state, p_type):
 
 nfile = open('next_state.txt', 'w')
 wfile = open('output.txt', 'w')
-wfile.write('Node,Depth,Value\n')    
 rfile = 'input.txt' #sys.argv[2]
 with open(rfile) as inputFile:
-    task = inputFile.readline().strip()
+    task = int(inputFile.readline().strip())
     my_player = int(inputFile.readline().strip())
     cutoff_depth = int(inputFile.readline().strip())
     p2_inp = inputFile.readline().strip().split(' ')
@@ -657,12 +664,29 @@ if my_player == 2:
     myChar = 'A'
     oppChar = 'B'
     opp_player = 1
-    
 
 print state
 print 'my player:', my_player
 
-#minimax(state)
-alphabeta(state)
+if task == 1:
+    wfile.write('Node,Depth,Value\n')
+    cutoff_depth = 1
+    minimax(state)
+elif task == 2:
+    wfile.write('Node,Depth,Value\n')
+    minimax(state)
+elif task == 3:
+    wfile.write('Node,Depth,Value,Alpha,Beta\n')
+    alphabeta(state)
+    
 wfile.close()
 nfile.close()
+
+
+
+
+
+
+
+
+
