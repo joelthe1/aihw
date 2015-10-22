@@ -281,7 +281,7 @@ def terminal_case(state, depth, p_type, continued):
         if continued:
             return False
         else:
-            wfile.write('')
+#            wfile.write('')
             return True
     elif depth < cutoff_depth:
         print 'returning false from terminal'
@@ -356,10 +356,10 @@ def minimax_max(state, depth, pit, player, parent_continues):
                 leaf_value = evaluate(end_state)
         print 'leaf in max', leaf_value
         write_out(player, pit, depth, leaf_value)
-        my_values['value'] = leaf_value
-        my_values['player'] = player
-        my_values['move'] = pit
-        path.append(my_values)
+#        my_values['value'] = leaf_value
+#        my_values['player'] = player
+#        my_values['move'] = pit
+#        path.append(my_values)
         return leaf_value
     value = float('-inf')
     my_values['value'] = value
@@ -426,10 +426,10 @@ def minimax_min(state, depth, pit, player, parent_continues):
                 end_state = endgame(state, player)
                 leaf_value = evaluate(end_state)
         write_out(player, pit, depth, leaf_value)
-        my_values['value'] = leaf_value
-        my_values['player'] = player
-        my_values['move'] = pit
-        path.append(my_values)
+#        my_values['value'] = leaf_value
+#        my_values['player'] = player
+#        my_values['move'] = pit
+#        path.append(my_values)
         print ('leaf in min')
         return leaf_value
     value = float('inf')
