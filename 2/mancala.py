@@ -358,7 +358,7 @@ def minimax_max(state, depth, pit, player, parent_continues):
         write_out(player, pit, depth, leaf_value)
         my_values['value'] = leaf_value
         my_values['player'] = player
-        my_values['pit'] = pit
+        my_values['move'] = pit
         path.append(my_values)
         return leaf_value
     value = float('-inf')
@@ -428,7 +428,7 @@ def minimax_min(state, depth, pit, player, parent_continues):
         write_out(player, pit, depth, leaf_value)
         my_values['value'] = leaf_value
         my_values['player'] = player
-        my_values['pit'] = pit
+        my_values['move'] = pit
         path.append(my_values)
         print ('leaf in min')
         return leaf_value
