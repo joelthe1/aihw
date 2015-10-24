@@ -42,19 +42,18 @@ def alphabeta(state):
             if s:
                 if index+2 == node['move']:
                     print_node = s
-                    player = node['player']
 
-    coins = 0
-    if player == 1:
-        for x in range(p1_mancala):
-            coins += print_node[x]
-        if coins == 0:
-            print_node = endgame(print_node,  my_player)
-    else:
-        for x in range(p1_mancala+1, p2_mancala):
-            coins += print_node[x]
-        if coins == 0:
-            print_node = endgame(end_state, opp_player)
+    p1_coins = 0
+    p2_coins = 0
+    for x in range(p1_mancala):
+        p1_coins += print_node[x]
+    for x in range(p1_mancala+1, p2_mancala):
+        p2_coins += print_node[x]
+
+    if p1_coins == 0:
+        print_node = endgame(print_node,  1)
+    elif p2_coins == 0:
+        print_node = endgame(print_node, 2)
 
     writeout_next_file(print_node)
     max_state = moves[i*2 + 1]
@@ -67,23 +66,23 @@ def alphabeta_max(state, depth, pit, player, parent_continues, alpha, beta):
     next_moves = actions(state, 'max')
 
     coins = 0
-    if player == 1:
-        for x in range(p1_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state,  my_player)
-            leaf_value = evaluate(end_state)
-            write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
-            return leaf_value            
-    else:
-        for x in range(p1_mancala+1, p2_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state, opp_player)
-            leaf_value = evaluate(end_state)
-            write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
-            return leaf_value            
+    for x in range(p1_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state,  1)
+        leaf_value = evaluate(end_state)
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
+        return leaf_value
     
+    coins = 0
+    for x in range(p1_mancala+1, p2_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state, 2)
+        leaf_value = evaluate(end_state)
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
+        return leaf_value            
+
     if terminal_case(state, depth, 'max', parent_continues):
         leaf_value = evaluate(state)
         write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
@@ -137,22 +136,22 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
     next_moves = actions(state, 'min')
 
     coins = 0
-    if player == 1:
-        for x in range(p1_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state, my_player)
-            leaf_value = evaluate(end_state)
-            write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
-            return leaf_value            
-    else:
-        for x in range(p1_mancala+1, p2_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state, opp_player)
-            leaf_value = evaluate(end_state)
-            write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)            
-            return leaf_value            
+    for x in range(p1_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state,  1)
+        leaf_value = evaluate(end_state)
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
+        return leaf_value
+    
+    coins = 0
+    for x in range(p1_mancala+1, p2_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state, 2)
+        leaf_value = evaluate(end_state)
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
+        return leaf_value            
 
     if terminal_case(state, depth, 'min', parent_continues):
         leaf_value = evaluate(state)
@@ -237,20 +236,19 @@ def minimax(state):
             if s:
                 if index+2 == node['move']:
                     print_node = s
-                    player = node['player']
 
-    coins = 0
-    if player == 1:
-        for x in range(p1_mancala):
-            coins += print_node[x]
-        if coins == 0:
-            print_node = endgame(print_node,  my_player)
-    else:
-        for x in range(p1_mancala+1, p2_mancala):
-            coins += print_node[x]
-        if coins == 0:
-            print_node = endgame(end_state, opp_player)
-                        
+    p1_coins = 0
+    p2_coins = 0
+    for x in range(p1_mancala):
+        p1_coins += print_node[x]
+    for x in range(p1_mancala+1, p2_mancala):
+        p2_coins += print_node[x]
+
+    if p1_coins == 0:
+        print_node = endgame(print_node,  1)
+    elif p2_coins == 0:
+        print_node = endgame(print_node, 2)
+
     writeout_next_file(print_node)
     max_state = moves[i*2 + 1]
 
@@ -330,28 +328,30 @@ def write_out_alphabeta(player, pit, depth, value, alpha, beta):
                 
 def minimax_max(state, depth, pit, player, parent_continues):
     global path
+    print 'in max and state = ', state
+    print state, depth, pit, player, parent_continues
     my_values = {}
     passed_player = player
     player_char = 'B' if player == 1 else 'A'
     next_moves = actions(state, 'max')    
 
     coins = 0
-    if player == 1:
-        for x in range(p1_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state,  my_player)
-            leaf_value = evaluate(end_state)
-            write_out(player, pit, depth, leaf_value)
-            return leaf_value            
-    else:
-        for x in range(p1_mancala+1, p2_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state, opp_player)
-            leaf_value = evaluate(end_state)
-            write_out(player, pit, depth, leaf_value)
-            return leaf_value            
+    for x in range(p1_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state, 1)
+        leaf_value = evaluate(end_state)
+        write_out(player, pit, depth, leaf_value)
+        return leaf_value
+    
+    coins = 0
+    for x in range(p1_mancala+1, p2_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state, 2)
+        leaf_value = evaluate(end_state)
+        write_out(player, pit, depth, leaf_value)
+        return leaf_value            
     
     if terminal_case(state, depth, 'max', parent_continues):
         leaf_value = evaluate(state)
@@ -401,23 +401,24 @@ def minimax_min(state, depth, pit, player, parent_continues):
     passed_player = player
     next_moves = actions(state, 'min')
 
+
     coins = 0
-    if player == 1:
-        for x in range(p1_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state, my_player)
-            leaf_value = evaluate(end_state)
-            write_out(player, pit, depth, leaf_value)
-            return leaf_value            
-    else:
-        for x in range(p1_mancala+1, p2_mancala):
-            coins += state[x]
-        if coins == 0:
-            end_state = endgame(state, opp_player)
-            leaf_value = evaluate(end_state)
-            write_out(player, pit, depth, leaf_value)
-            return leaf_value            
+    for x in range(p1_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state,  1)
+        leaf_value = evaluate(end_state)
+        write_out(player, pit, depth, leaf_value)
+        return leaf_value
+    
+    coins = 0
+    for x in range(p1_mancala+1, p2_mancala):
+        coins += state[x]
+    if coins == 0:
+        end_state = endgame(state, 2)
+        leaf_value = evaluate(end_state)
+        write_out(player, pit, depth, leaf_value)
+        return leaf_value            
 
     if terminal_case(state, depth, 'min', parent_continues):
         leaf_value = evaluate(state)
