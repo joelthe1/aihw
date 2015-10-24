@@ -328,8 +328,6 @@ def write_out_alphabeta(player, pit, depth, value, alpha, beta):
                 
 def minimax_max(state, depth, pit, player, parent_continues):
     global path
-    print 'in max and state = ', state
-    print state, depth, pit, player, parent_continues
     my_values = {}
     passed_player = player
     player_char = 'B' if player == 1 else 'A'
