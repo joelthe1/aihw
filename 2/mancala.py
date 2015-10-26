@@ -137,7 +137,6 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
         write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
         my_values['player'] = player
         my_values['move'] = pit
-        write_out(player, pit, depth, leaf_value)
         return {'value':leaf_value, 'path':[my_values]}        
     
     coins = 0
@@ -149,7 +148,6 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
         write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
         my_values['player'] = player
         my_values['move'] = pit
-        write_out(player, pit, depth, leaf_value)
         return {'value':leaf_value, 'path':[my_values]}        
 
     if terminal_case(state, depth, 'min', parent_continues):
@@ -157,7 +155,6 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
         write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
         my_values['player'] = player
         my_values['move'] = pit
-        write_out(player, pit, depth, leaf_value)
         return {'value':leaf_value, 'path':[my_values]}        
     
     value = float('inf')
