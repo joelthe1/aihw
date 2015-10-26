@@ -1,6 +1,15 @@
 import operator
 import sys
 
+class finalBoard:
+    def __init__(self, player, level, value, board):
+        self.player = player
+        self.value = value
+        self.level = level
+        self.board = board[:]
+        self.next_states = []
+        
+        
 def alphabeta(state):
     global path
     moves = []
@@ -204,18 +213,22 @@ def minimax(state):
     paths = []
     max_root = float('-inf')
     next_moves = actions(state, 'max')
-    wfile.write('root'+',0,-Infinity\n')    
+    wfile.write('root'+',0,-Infinity\n')
+    root_obj = finalBoard(my_player, 0, 0, state)
     for index, s in enumerate(next_moves):
         if s:
+            child_obj = finalBoard(my_player, 1, evaluate(s), s)
             continue_flag = continue_move(state, index, 'max')
             if continue_flag:
-                temp = minimax_max(s, 1, index+2, my_player, continue_flag)
+                temp = minimax_max(s, 1, index+2, my_player, continue_flag, child_obj)
             else:
-                temp = minimax_min(s, 1, index+2, my_player, continue_flag)
+                temp = minimax_min(s, 1, index+2, my_player, continue_flag, child_obj)
             moves.append(temp)
             moves.append(s)
+            root_obj.next_states.append(child_obj)
             if temp > max_root:
                 max_root = temp
+                
             wfile.write('root'+','+'0,'+str(max_root)+'\n')
             temp = path[:]
             temp.reverse()
@@ -227,6 +240,7 @@ def minimax(state):
     scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
     i, value = max(enumerate(scoreArr), key=operator.itemgetter(1)) #breaks for 0 0 0 input.
     print_node = moves[i*2 + 1]
+    #print paths[i]
     player = 0
     for node in paths[i]:
         if node['player'] != my_player:
@@ -237,21 +251,46 @@ def minimax(state):
                 if index+2 == node['move']:
                     print_node = s
 
-    p1_coins = 0
-    p2_coins = 0
-    for x in range(p1_mancala):
-        p1_coins += print_node[x]
-    for x in range(p1_mancala+1, p2_mancala):
-        p2_coins += print_node[x]
-
-    if p1_coins == 0:
-        print_node = endgame(print_node,  1)
-    elif p2_coins == 0:
-        print_node = endgame(print_node, 2)
+    print_final_state(root_obj)
+#    p1_coins = 0
+#    p2_coins = 0
+#    for x in range(p1_mancala):
+#        p1_coins += print_node[x]
+#    for x in range(p1_mancala+1, p2_mancala):
+#        p2_coins += print_node[x]
+#
+#    if p1_coins == 0:
+#        print_node = endgame(print_node,  1)
+#    elif p2_coins == 0:
+#        print_node = endgame(print_node, 2)
 
     writeout_next_file(print_node)
     max_state = moves[i*2 + 1]
 
+def print_final_state(state_obj):
+    print 'here'
+    if len(state_obj.next_states) == 0:
+        print state_obj.board
+        return
+    elif len(state_obj.next_states) == 1:
+        next = state_obj.next_states[0]
+    else:
+        next = max(state_obj.next_states, key=lambda x: x.value)
+    print 'next is ', next.board, next.value
+    if next.player != my_player:
+        print state_obj.board
+    while next.player == my_player:
+        if len(next.next_states) == 1:
+            next = next.next_states[0]
+        if len(next.next_states) > 1:
+            next = max(next.next_states, key=lambda x: x.value)
+        if len(next.next_states) == 0:
+            print next.board
+            return
+        if next.player != my_player:
+            print next.board
+            return
+    
 def writeout_next_file(state):
     y = -2
     for x in range(p1_mancala+1, p2_mancala):
@@ -326,12 +365,14 @@ def write_out_alphabeta(player, pit, depth, value, alpha, beta):
     else:
         wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+','+str(alpha)+','+str(beta)+'\n')
                 
-def minimax_max(state, depth, pit, player, parent_continues):
+def minimax_max(state, depth, pit, player, parent_continues, state_obj):
     global path
     my_values = {}
     passed_player = player
     player_char = 'B' if player == 1 else 'A'
-    next_moves = actions(state, 'max')    
+    next_moves = actions(state, 'max')
+#    print 'minimax_max and state = ', state
+#    print 'depth = ',depth,'pit = ', pit, 'and continues = ', parent_continues
 
     coins = 0
     for x in range(p1_mancala):
@@ -358,41 +399,44 @@ def minimax_max(state, depth, pit, player, parent_continues):
     
     value = float('-inf')
     my_values['value'] = value
-    write_out(player, pit, depth, value)    
+    write_out(player, pit, depth, value)
     if parent_continues:
         child_depth = depth
     else:
         child_depth = depth + 1
         player = 1 if player == 2 else 2
+        
     for index, s in enumerate(next_moves):
         if s:
+            child_obj = finalBoard(player, depth, None, s)
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
-                temp = value
-                value = max(value, minimax_max(s, child_depth, index+2, player, True))
+                value = max(value, minimax_max(s, child_depth, index+2, player, True, child_obj))
                 if temp != value:
                     my_values['value'] = value
                     my_values['player'] = player
                     my_values['move'] = index+2
             elif continue_flag:
                 temp = value
-                value = max(value, minimax_max(s, child_depth, index+2, player, True))
+                value = max(value, minimax_max(s, child_depth, index+2, player, True, child_obj))
                 if temp != value:
                     my_values['value'] = value
                     my_values['player'] = player
                     my_values['move'] = index+2
             else:
                 temp = value
-                value = max(value, minimax_min(s, child_depth, index+2, player, False))
+                value = max(value, minimax_min(s, child_depth, index+2, player, False, child_obj))
                 if temp != value:
                     my_values['value'] = value
                     my_values['player'] = player
                     my_values['move'] = index+2
-            write_out(passed_player, pit, depth, value)                    
+            child_obj.value = value
+            state_obj.next_states.append(child_obj)
+            write_out(passed_player, pit, depth, value)
     path.append(my_values)
     return value
 
-def minimax_min(state, depth, pit, player, parent_continues):
+def minimax_min(state, depth, pit, player, parent_continues, state_obj):
     global path
     my_values = {}
     player_char = 'B' if player == 1 else 'A'
@@ -422,7 +466,6 @@ def minimax_min(state, depth, pit, player, parent_continues):
         leaf_value = evaluate(state)
         write_out(player, pit, depth, leaf_value)
         return leaf_value
-    
     value = float('inf')
     my_values['value'] = value
     write_out(player, pit, depth, value)    
@@ -433,29 +476,32 @@ def minimax_min(state, depth, pit, player, parent_continues):
         player = 1 if player == 2 else 2
     for index, s in enumerate(next_moves):
         if s:
+            child_obj = finalBoard(player, depth, None, s)
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
                 temp = value
-                value = min(value, minimax_min(s, child_depth, index+2, player, True))
+                value = min(value, minimax_min(s, child_depth, index+2, player, True, child_obj))
                 if temp != value:
                     my_values['value'] = value
                     my_values['player'] = player
                     my_values['move'] = index+2
             elif continue_flag:
                 temp = value
-                value = min(value, minimax_min(s, child_depth, index+2, player, True))
+                value = min(value, minimax_min(s, child_depth, index+2, player, True, child_obj))
                 if temp != value:
                     my_values['value'] = value
                     my_values['player'] = player
                     my_values['move'] = index+2
             else:
                 temp = value
-                value = min(value, minimax_max(s, child_depth, index+2, player, False))
+                value = min(value, minimax_max(s, child_depth, index+2, player, False, child_obj))
                 if temp != value:
                     my_values['value'] = value
                     my_values['player'] = player
                     my_values['move'] = index+2
-            write_out(passed_player, pit, depth, value)                    
+            child_obj.value = value
+            state_obj.next_states.append(child_obj)
+            write_out(passed_player, pit, depth, value)
     path.append(my_values)
     return value
 
@@ -466,7 +512,7 @@ def evaluate(state):
         return state[p2_mancala] - state[p1_mancala]
     
 def continue_move(parent, index, p_type):
-    length = p2_mancala + 1    
+    length = p2_mancala + 1
     if p_type == 'max':
         if my_player == 1:
             z = 1
