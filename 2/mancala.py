@@ -1,18 +1,9 @@
 import operator
 import sys
 
-class finalBoard:
-    def __init__(self, player, level, value, move):
-        self.player = player
-        self.value = value
-        self.move = move
-        self.board = board[:]
-        self.next_states = []
-
 def alphabeta(state):
-    global path
     moves = []
-    paths = []
+    paths = ''
     alpha = float('-inf')
     beta = float('inf')
     max_root = float('-inf')
@@ -25,24 +16,18 @@ def alphabeta(state):
                 temp = alphabeta_max(s, 1, index+2, my_player, continue_flag, alpha, beta)
             else:
                 temp = alphabeta_min(s, 1, index+2, my_player, continue_flag, alpha, beta)
-            moves.append(temp)
-            moves.append(s)
-            if temp > max_root:
-                max_root = temp
-            temp = path[:]
-            temp.reverse()
-            paths.append(temp)
-            path = []
+            if temp['value'] > max_root:
+                max_root = temp['value']
+                paths = temp['path']
             if max_root >= beta:
                 write_out_alphabeta('root', 0, 0, max_root, alpha, beta)
                 break
             alpha = max(alpha, max_root)
             write_out_alphabeta('root', 0, 0, max_root, alpha, beta)
-    scoreArr = [x for i,x in enumerate(moves) if i%2 == 0]
-    i, value = max(enumerate(scoreArr), key=operator.itemgetter(1)) #breaks for 0 0 0 input.
-    print_node = moves[i*2 + 1]
+    paths.reverse()
     player = 0
-    for node in paths[i]:
+    print_node = state
+    for node in paths:
         if node['player'] != my_player:
             break
         children = actions(print_node, 'max')
@@ -64,10 +49,9 @@ def alphabeta(state):
         print_node = endgame(print_node, 2)
 
     writeout_next_file(print_node)
-    max_state = moves[i*2 + 1]
 
 def alphabeta_max(state, depth, pit, player, parent_continues, alpha, beta):
-    global path
+    subtree_path = []
     my_values = {}
     passed_player = player
     player_char = 'B' if player == 1 else 'A'
@@ -79,8 +63,10 @@ def alphabeta_max(state, depth, pit, player, parent_continues, alpha, beta):
     if coins == 0:
         end_state = endgame(state,  1)
         leaf_value = evaluate(end_state)
-        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
-        return leaf_value
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
+        my_values['player'] = player
+        my_values['move'] = pit
+        return {'value':leaf_value, 'path':[my_values]}
     
     coins = 0
     for x in range(p1_mancala+1, p2_mancala):
@@ -88,16 +74,23 @@ def alphabeta_max(state, depth, pit, player, parent_continues, alpha, beta):
     if coins == 0:
         end_state = endgame(state, 2)
         leaf_value = evaluate(end_state)
-        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
-        return leaf_value            
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
+        my_values['player'] = player
+        my_values['move'] = pit
+        return {'value':leaf_value, 'path':[my_values]}
 
     if terminal_case(state, depth, 'max', parent_continues):
         leaf_value = evaluate(state)
         write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
-        return leaf_value
+        my_values['player'] = player
+        my_values['move'] = pit
+        return {'value':leaf_value, 'path':[my_values]}
     
     value = float('-inf')
-    my_values['value'] = value
+    my_values['move'] = pit
+    my_values['player'] = player
+    ret_val = {}
+    ret_val['path'] = []
     write_out_alphabeta(player, pit, depth, value, alpha, beta)
     if parent_continues:
         child_depth = depth
@@ -107,37 +100,29 @@ def alphabeta_max(state, depth, pit, player, parent_continues, alpha, beta):
     for index, s in enumerate(next_moves):
         if s:
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
+            temp = value
             if depth == cutoff_depth and continue_flag:
-                temp = value
-                value = max(value, alphabeta_max(s, child_depth, index+2, player, True, alpha, beta))
-                if temp != value:
-                    my_values['value'] = value
-                    my_values['player'] = player
-                    my_values['move'] = index+2
+                ret_val = alphabeta_max(s, child_depth, index+2, player, True, alpha, beta)
+                value = max(value, ret_val['value'])
             elif continue_flag:
-                temp = value
-                value = max(value, alphabeta_max(s, child_depth, index+2, player, True, alpha, beta))
-                if temp != value:
-                    my_values['value'] = value
-                    my_values['player'] = player
-                    my_values['move'] = index+2
+                ret_val = alphabeta_max(s, child_depth, index+2, player, True, alpha, beta)
+                value = max(value, ret_val['value'])
             else:
-                temp = value
-                value = max(value, alphabeta_min(s, child_depth, index+2, player, False, alpha, beta))
-                if temp != value:
-                    my_values['value'] = value
-                    my_values['player'] = player
-                    my_values['move'] = index+2
+                ret_val = alphabeta_min(s, child_depth, index+2, player, False, alpha, beta)
+                value = max(value, ret_val['value'])
+            if temp < value:
+                subtree_path = ret_val['path'][:]
             if value >= beta:
                 write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
-                return value
+                subtree_path.append(my_values)
+                return {'value':value, 'path':subtree_path}
             alpha = max(alpha, value)
             write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
-    path.append(my_values)
-    return value
+    subtree_path.append(my_values)
+    return {'value':value, 'path':subtree_path}
 
 def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
-    global path
+    subtree_path = []
     my_values = {}
     player_char = 'B' if player == 1 else 'A'
     passed_player = player
@@ -149,8 +134,11 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
     if coins == 0:
         end_state = endgame(state,  1)
         leaf_value = evaluate(end_state)
-        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
-        return leaf_value
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
+        my_values['player'] = player
+        my_values['move'] = pit
+        write_out(player, pit, depth, leaf_value)
+        return {'value':leaf_value, 'path':[my_values]}        
     
     coins = 0
     for x in range(p1_mancala+1, p2_mancala):
@@ -158,16 +146,25 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
     if coins == 0:
         end_state = endgame(state, 2)
         leaf_value = evaluate(end_state)
-        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)        
-        return leaf_value            
+        write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
+        my_values['player'] = player
+        my_values['move'] = pit
+        write_out(player, pit, depth, leaf_value)
+        return {'value':leaf_value, 'path':[my_values]}        
 
     if terminal_case(state, depth, 'min', parent_continues):
         leaf_value = evaluate(state)
         write_out_alphabeta(player, pit, depth, leaf_value, alpha, beta)
-        return leaf_value
+        my_values['player'] = player
+        my_values['move'] = pit
+        write_out(player, pit, depth, leaf_value)
+        return {'value':leaf_value, 'path':[my_values]}        
     
     value = float('inf')
-    my_values['value'] = value
+    ret_val = {}
+    ret_val['path'] = []
+    my_values['player'] = player
+    my_values['move'] = pit
     write_out_alphabeta(player, pit, depth, value, alpha, beta)
     if parent_continues:
         child_depth = depth
@@ -177,34 +174,26 @@ def alphabeta_min(state, depth, pit, player, parent_continues, alpha, beta):
     for index, s in enumerate(next_moves):
         if s:
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
+            temp = value
             if depth == cutoff_depth and continue_flag:
-                temp = value
-                value = min(value, alphabeta_min(s, child_depth, index+2, player, True, alpha, beta))
-                if temp != value:
-                    my_values['value'] = value
-                    my_values['player'] = player
-                    my_values['move'] = index+2
+                ret_val = alphabeta_min(s, child_depth, index+2, player, True, alpha, beta)
+                value = min(value, ret_val['value'])
             elif continue_flag:
-                temp = value
-                value = min(value, alphabeta_min(s, child_depth, index+2, player, True, alpha, beta))
-                if temp != value:
-                    my_values['value'] = value
-                    my_values['player'] = player
-                    my_values['move'] = index+2
+                ret_val = alphabeta_min(s, child_depth, index+2, player, True, alpha, beta)
+                value = min(value, ret_val['value'])
             else:
-                temp = value
-                value = min(value, alphabeta_max(s, child_depth, index+2, player, False, alpha, beta))
-                if temp != value:
-                    my_values['value'] = value
-                    my_values['player'] = player
-                    my_values['move'] = index+2
+                ret_val = alphabeta_max(s, child_depth, index+2, player, False, alpha, beta)
+                value = min(value, ret_val['value'])
+            if temp > value:
+                subtree_path = ret_val['path'][:]
             if value <= alpha:
                 write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
-                return value
+                subtree_path.append(my_values)
+                return {'value':value, 'path':subtree_path}
             beta = min(beta, value)
             write_out_alphabeta(passed_player, pit, depth, value, alpha, beta)
-    path.append(my_values)
-    return value
+    subtree_path.append(my_values)
+    return {'value':value, 'path':subtree_path}
 
 def minimax(state):
     moves = []
@@ -212,7 +201,6 @@ def minimax(state):
     max_root = float('-inf')
     next_moves = actions(state, 'max')
     wfile.write('root'+',0,-Infinity\n')
-    my_values = {'player':my_player}
     for index, s in enumerate(next_moves):
         if s:
             continue_flag = continue_move(state, index, 'max')
@@ -220,25 +208,12 @@ def minimax(state):
                 temp = minimax_max(s, 1, index+2, my_player, continue_flag)
             else:
                 temp = minimax_min(s, 1, index+2, my_player, continue_flag)
-#            moves.append(temp)
-#            moves.append(s)
-            print temp['value'], temp['path']
             if temp['value'] > max_root:
                 max_root = temp['value']
                 paths = temp['path']
-#                my_values['move'] = index+2
-                print 'changed to ', max_root, paths
             wfile.write('root'+','+'0,'+str(max_root)+'\n')
-#            temp = path[:]
-#            temp.reverse()
-#            paths.append(temp)
-#            path = []
-#    print moves
-#    print len(paths)
     moves = paths
-#    moves.append(my_values)
     moves.reverse()
-    print moves
     print_node = state
     for node in moves:
         if node['player'] != my_player:
@@ -338,7 +313,6 @@ def write_out_alphabeta(player, pit, depth, value, alpha, beta):
         wfile.write(player_char+str(pit)+','+str(depth)+','+str(value)+','+str(alpha)+','+str(beta)+'\n')
                 
 def minimax_max(state, depth, pit, player, parent_continues):
-    print 'in max state = ', state
     subtree_path = []
     my_values = {}
     passed_player = player
@@ -406,7 +380,6 @@ def minimax_max(state, depth, pit, player, parent_continues):
     return {'value':value, 'path':subtree_path}
 
 def minimax_min(state, depth, pit, player, parent_continues):
-    print 'in min state = ', state 
     subtree_path = []
     my_values = {}
     player_char = 'B' if player == 1 else 'A'
@@ -439,7 +412,6 @@ def minimax_min(state, depth, pit, player, parent_continues):
         my_values['player'] = player
         my_values['move'] = pit
         write_out(player, pit, depth, leaf_value)
-        print 'in min terminal', my_values
         return {'value':leaf_value, 'path':[my_values]}        
     
     value = float('inf')
@@ -644,7 +616,6 @@ state = p1 + p2
 p2_mancala = len(state) - 1
 
 terminator = 0
-path = []
 
 myChar = 'B'
 oppChar = 'A'
