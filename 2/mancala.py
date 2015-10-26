@@ -2,12 +2,13 @@ import operator
 import sys
 
 class finalBoard:
-    def __init__(self, player, level, value, board):
+    def __init__(self, player, level, value, board, to_move):
         self.player = player
         self.value = value
         self.level = level
         self.board = board[:]
         self.next_states = []
+        self.to_move = to_move
         
         
 def alphabeta(state):
@@ -214,10 +215,10 @@ def minimax(state):
     max_root = float('-inf')
     next_moves = actions(state, 'max')
     wfile.write('root'+',0,-Infinity\n')
-    root_obj = finalBoard(my_player, 0, 0, state)
+    root_obj = finalBoard(my_player, 0, 0, state, my_player)
     for index, s in enumerate(next_moves):
         if s:
-            child_obj = finalBoard(my_player, 1, evaluate(s), s)
+            child_obj = finalBoard(my_player, 1, evaluate(s), s, my_player)
             continue_flag = continue_move(state, index, 'max')
             if continue_flag:
                 temp = minimax_max(s, 1, index+2, my_player, continue_flag, child_obj)
@@ -276,20 +277,22 @@ def print_final_state(state_obj):
         next = state_obj.next_states[0]
     else:
         next = max(state_obj.next_states, key=lambda x: x.value)
-    print 'next is ', next.board, next.value
-    if next.player != my_player:
+    print 'next is ', next.board, next.value, next.to_move
+    if next.to_move != state_obj.to_move:
         print state_obj.board
-    while next.player == my_player:
+    while next.to_move == state_obj.to_move:
+        print next.player, next.board
         if len(next.next_states) == 1:
             next = next.next_states[0]
         if len(next.next_states) > 1:
+            print 'next is', next
             next = max(next.next_states, key=lambda x: x.value)
+            print 'and now it is', next
         if len(next.next_states) == 0:
-            print next.board
+            print 'it is printing from here', next.board
             return
-        if next.player != my_player:
-            print next.board
-            return
+        if next.to_move != state_obj.to_move:
+            print 'it is printing here', next.board
     
 def writeout_next_file(state):
     y = -2
@@ -408,7 +411,7 @@ def minimax_max(state, depth, pit, player, parent_continues, state_obj):
         
     for index, s in enumerate(next_moves):
         if s:
-            child_obj = finalBoard(player, depth, None, s)
+            child_obj = finalBoard(player, depth, None, s, player)
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
                 value = max(value, minimax_max(s, child_depth, index+2, player, True, child_obj))
@@ -431,6 +434,7 @@ def minimax_max(state, depth, pit, player, parent_continues, state_obj):
                     my_values['player'] = player
                     my_values['move'] = index+2
             child_obj.value = value
+            state_obj.player = player
             state_obj.next_states.append(child_obj)
             write_out(passed_player, pit, depth, value)
     path.append(my_values)
@@ -476,7 +480,7 @@ def minimax_min(state, depth, pit, player, parent_continues, state_obj):
         player = 1 if player == 2 else 2
     for index, s in enumerate(next_moves):
         if s:
-            child_obj = finalBoard(player, depth, None, s)
+            child_obj = finalBoard(player, depth, None, s, player)
             continue_flag = continue_move(state, index, 'max' if player == my_player else 'min')
             if depth == cutoff_depth and continue_flag:
                 temp = value
@@ -501,6 +505,7 @@ def minimax_min(state, depth, pit, player, parent_continues, state_obj):
                     my_values['move'] = index+2
             child_obj.value = value
             state_obj.next_states.append(child_obj)
+            state_obj.player = player
             write_out(passed_player, pit, depth, value)
     path.append(my_values)
     return value
