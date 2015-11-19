@@ -1,3 +1,5 @@
+import re
+
 class Constant:
     def __init__(self, cname):
         self.value = cname
@@ -69,16 +71,50 @@ def occur_check(var, x, theta):
                 return True
     else:
         return False
-    
+
+def standardize_variables(var):
+    if not isinstance(var, Compound):
+        return var
+    elif isinstance(var, Compound):
+        if val in var.args:
+            if isinstance(val, Variable):
+                pass
+        
 #def fol_bc_ask(kb, query):
 #    return fol_bc_or(kb, query, {})
 
 #def fol_bc_or(kb, goal, theta):
     
 
-            
+def objectify(var):
+    global var_counter
+    var_map = {}
+    arg_list = []
+    for sentence in var:
+        match = re.match(r'([~A-Z].*?)[(](.*)[)]', sentence)
+        op_str = match.group(1)
+        args_str = match.group(2)
+        args = args_str.split(',')
+        print args
+        for val in args:
+            var_match = re.match(r'^[a-z]', val)
+            if var_match is not None:
+                print var_match.group(0)
+                var_map[var_match.group(0)] = 'x_%d' % var_counter
+                temp_var = Variable(var_map[var_match.group(0)])
+                arg_list.append(temp_var)
+                var_counter += 1
+
+        temp_comp = Compound(op_str, arg_list)
+        print 'here'
+        print temp_comp.op
+        print temp_comp.args
+
+        
+var_counter = 0
 queries = []
 clauses = {}
+objs = []
 with open('input.txt') as inp:
     num_queries = int(inp.readline())
     for x in range(num_queries):
@@ -88,8 +124,9 @@ with open('input.txt') as inp:
     num_clauses = int(inp.readline())
     for x in range(num_clauses):
         line = inp.readline()[:-1]
-        clause = line.split('=>')
-#        print clause
+        clause = [x.strip() for x in line.split('=>')]
+#        for c in clause:
+        print clause
 
 con_bob = Constant('Bob')
 con_alice = Constant('Alice')
@@ -120,3 +157,5 @@ print unify(comp_dxy, comp_djb)
 print unify(con_bob, var_x)
 
 print occur_check(var_y, comp_dxy, {})
+
+objectify(['Asdlkf(x,y,Goal)','Box(x,Ant,y)'])
