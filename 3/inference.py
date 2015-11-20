@@ -72,14 +72,6 @@ def occur_check(var, x, theta):
     else:
         return False
 
-def standardize_variables(var):
-    if not isinstance(var, Compound):
-        return var
-    elif isinstance(var, Compound):
-        if val in var.args:
-            if isinstance(val, Variable):
-                pass
-        
 #def fol_bc_ask(kb, query):
 #    return fol_bc_or(kb, query, {})
 
@@ -90,6 +82,8 @@ def objectify(var):
     global var_counter
     var_map = {}
     arg_list = []
+    results = []
+    print 'printing var', var
     for sentence in var:
         match = re.match(r'([~A-Z].*?)[(](.*)[)]', sentence)
         op_str = match.group(1)
@@ -98,18 +92,27 @@ def objectify(var):
         print args
         for val in args:
             var_match = re.match(r'^[a-z]', val)
+            constt_match = re.match(r'^[A-Z].*', val)
             if var_match is not None:
-                print var_match.group(0)
-                var_map[var_match.group(0)] = 'x_%d' % var_counter
-                temp_var = Variable(var_map[var_match.group(0)])
+                if var_match.group(0) in var_map:
+                    temp_var = Variable(var_map[var_match.group(0)])
+                else:    
+                    var_map[var_match.group(0)] = 'x_%d' % var_counter
+                    temp_var = Variable(var_map[var_match.group(0)])
                 arg_list.append(temp_var)
                 var_counter += 1
+            elif constt_match is not None:
+                arg_list.append(Constant(constt_match.group(0)))
 
         temp_comp = Compound(op_str, arg_list)
-        print 'here'
-        print temp_comp.op
-        print temp_comp.args
+        arg_list = []
+        results.append(temp_comp)
+    print '#####################'
+    print results[0].args
+    print results[1].args
 
+    print results[0].args[2].value
+    print results[1].args[1].value
         
 var_counter = 0
 queries = []
