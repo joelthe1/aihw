@@ -13,6 +13,11 @@ class Compound:
         self.op = op
         self.args = args
 
+class Clause:
+    def __init__(self, lhs, rhs):
+        self.lhs = lhs
+        self.rhs = rhs
+        
 def unify(x, y, theta = {}):
 #    print x, y, theta
     if theta is None:
@@ -80,6 +85,7 @@ def occur_check(var, x, theta):
 
 def objectify(var):
     global var_counter
+    global kb
     var_map = {}
     arg_list = []
     results = []
@@ -107,28 +113,27 @@ def objectify(var):
         temp_comp = Compound(op_str, arg_list)
         arg_list = []
         results.append(temp_comp)
-    print '#####################'
-    print results[0].args
-    print results[1].args
-
-    print results[0].args[2].value
-    print results[1].args[1].value
+    if len(results) > 1:
+        c = Clause(results[:-1], results[-1])
+    else:
+        c = Clause(results[0], True)
+    kb.append(c)
         
 var_counter = 0
 queries = []
 clauses = {}
 objs = []
+kb = []
 with open('input.txt') as inp:
     num_queries = int(inp.readline())
     for x in range(num_queries):
         queries.append(inp.readline()[:-1])
-#    print queries
     
     num_clauses = int(inp.readline())
     for x in range(num_clauses):
         line = inp.readline()[:-1]
         clause = [x.strip() for x in line.split('=>')]
-#        for c in clause:
+        objectify(clause)
         print clause
 
 con_bob = Constant('Bob')
@@ -161,4 +166,6 @@ print unify(con_bob, var_x)
 
 print occur_check(var_y, comp_dxy, {})
 
-objectify(['Asdlkf(x,y,Goal)','Box(x,Ant,y)'])
+#objectify(['Asdlkf(x,y,Goal)','Box(x,Ant,y)'])
+print kb
+print len(kb)
