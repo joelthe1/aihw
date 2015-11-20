@@ -21,7 +21,7 @@ class Clause:
 
 def unify(x, y, theta = {}):
     if theta is None:
-        return False
+        return None
     elif x == y:
         return theta
     elif isinstance(x, Variable):
@@ -63,11 +63,24 @@ def occur_check(var, x, theta):
     else:
         return False
 
-#def fol_bc_ask(kb, query):
-#    return fol_bc_or(kb, query, {})
+def fol_bc_ask(kb, query):
+    return fol_bc_or(kb, query, {})
 
-#def fol_bc_or(kb, goal, theta):
-    
+def fol_bc_or(kb, goal, theta):
+    for expr in kb:
+        for s in fol_bc_and(kb, expr.lhs, unify(expr.rhs, goal, theta)):
+            yield s
+
+def fol_bc_and(kb, goals, theta):
+    if theta == None:
+        return
+    elif len(goals) == 0:
+        yield theta
+    else:
+        first, rest = goals[0], goals[1:]
+        for s in fol_bc_or(kb, subs(theta, first), theta):
+            for s2 in fol_bc_and(kb, rest, s):
+                yield s2
 
 def subs(theta, var):
     var_copy = deepcopy(var)
@@ -76,22 +89,18 @@ def subs(theta, var):
     for val in var_copy.args:
         if isinstance(val, Variable) and val.value in theta:
             val.value = theta[val.value]
-    print var_copy
     return var_copy
 
 def objectify(var):
     global var_counter
-    global kb
     var_map = {}
     arg_list = []
     results = []
-    print 'printing var', var
     for sentence in var:
         match = re.match(r'([~A-Z].*?)[(](.*)[)]', sentence)
         op_str = match.group(1)
         args_str = match.group(2)
         args = args_str.split(',')
-        print args
         for val in args:
             var_match = re.match(r'^[a-z]', val)
             constt_match = re.match(r'^[A-Z].*', val)
@@ -109,10 +118,9 @@ def objectify(var):
         arg_list = []
         results.append(temp_comp)
     if len(results) > 1:
-        c = Clause(results[:-1], results[-1])
+        return Clause(results[:-1], results[-1])
     else:
-        c = Clause(results[0], True)
-    kb.append(c)
+        return Clause([results[0]], True)
         
 var_counter = 0
 queries = []
@@ -122,52 +130,31 @@ kb = []
 with open('input.txt') as inp:
     num_queries = int(inp.readline())
     for x in range(num_queries):
-        queries.append(inp.readline()[:-1])
+        query = [inp.readline()[:-1]]
+        queries.append(objectify(query).lhs)
     
     num_clauses = int(inp.readline())
-#    num_clauses = 1 #Testing
     for x in range(num_clauses):
         line = inp.readline()[:-1]
         clause = [x.strip() for x in line.split('=>')]
-        objectify(clause)
+        if len(clause) > 1:
+            lhs = [x.strip() for x in clause[0].split('^')]
+            clause = lhs + [clause[-1]]
         print clause
+        v = objectify(clause)
+        print v.lhs
+        print v.rhs
+        kb.append(objectify(clause))
 
-con_bob = Constant('Bob')
-con_alice = Constant('Alice')
-print con_bob.value
-print con_alice.value
-
-var_x = Variable('x')
-var_y = Variable('y')
-print var_x.value
-print var_y.value
-
-l1 = [var_x, var_y]
-l2 = [con_bob, con_alice]
-
-comp_dxy = Compound('D', [var_x, var_y])
-comp_edxy = Compound('E', [comp_dxy, var_y])
-
-comp_djb = Compound('D', [con_bob, con_alice])
-print comp_dxy.op
-print comp_dxy.args[0].value
-print comp_djb.op
-print comp_djb.args[0].value
-print hasattr(comp_djb, '__class__')
-print 'here'
-print unify(comp_dxy, comp_djb)
-print unify(con_bob, var_x)
-
-print occur_check(var_y, comp_dxy, {})
-
-#objectify(['Asdlkf(x,y,Goal)','Box(x,Ant,y)'])
-print kb
-#print len(kb), kb[0].lhs[0].args[1].value, kb[0].rhs.args[2].value
-
-t2 = unify(kb[0].lhs[0], kb[0].rhs)
-print 'united', t2
-temp = subs({'x_1':'Alice', 'x_0':'Bob'}, kb[0].rhs)
-print temp.op
-print temp.args[0].value
-print temp.args[1].value
-print temp.args[2].value
+print len(queries)
+print len(kb)
+print queries[0]
+answer = fol_bc_ask(kb, queries[0])
+for val in answer:
+    print 'the answer is', val
+#for query in queries:
+#    answer = fol_bc_ask(kb, query)
+#    print 'in here'
+#    for res in answer:
+#        print 'in here again'
+#        print res
