@@ -1,4 +1,5 @@
 import re
+from copy import deepcopy
 
 class Constant:
     def __init__(self, cname):
@@ -17,33 +18,24 @@ class Clause:
     def __init__(self, lhs, rhs):
         self.lhs = lhs
         self.rhs = rhs
-        
+
 def unify(x, y, theta = {}):
-#    print x, y, theta
     if theta is None:
-#        print 'doing this'
         return False
     elif x == y:
-#        print 'not here1'
         return theta
     elif isinstance(x, Variable):
-#        print 'not here2'
         return unify_var(x, y, theta)
     elif isinstance(y, Variable):
-#        print 'not here3'
         return unify_var(y, x, theta)
     elif isinstance(x, Compound) and isinstance(y, Compound):
-#        print 'not here4'
         return unify(x.args, y.args, unify(x.op, y.op, theta))
     elif type(x) is list and type(y) is list:
-#        print 'not here5'
         return unify(x[1:], y[1:], unify(x[0], y[0], theta))
     else:
-#        print 'here finally'
         return None
 
 def unify_var(var, x, theta):
-#    print 'printing theta', theta
     if var.value in theta:
         return unify(theta[var.value], x, theta)
     elif x.value in theta:
@@ -57,21 +49,15 @@ def unify_var(var, x, theta):
 
 def occur_check(var, x, theta):
     if var == x:
-#        print 'doing this', var, x
         return True
     elif isinstance(x, Variable) and x.value in theta:
-#        print 'in 2', x.value
         return occur_check(var, theta[x.value], theta)
     elif isinstance(x, Compound):
-#        print 'now in this', x.op, x.args
         o1 = occur_check(var, x.op, theta)
-#        print 'after this'
         o2 = occur_check(var, x.args, theta)
         return o1 or o2
     elif type(x) is list:
-#        print 'and in this', x
         for e in x:
-#            print e
             if occur_check(var, e, theta):
                 return True
     else:
@@ -82,6 +68,16 @@ def occur_check(var, x, theta):
 
 #def fol_bc_or(kb, goal, theta):
     
+
+def subs(theta, var):
+    var_copy = deepcopy(var)
+    if len(theta) == 0:
+        return var_copy
+    for val in var_copy.args:
+        if isinstance(val, Variable) and val.value in theta:
+            val.value = theta[val.value]
+    print var_copy
+    return var_copy
 
 def objectify(var):
     global var_counter
@@ -109,7 +105,6 @@ def objectify(var):
                 var_counter += 1
             elif constt_match is not None:
                 arg_list.append(Constant(constt_match.group(0)))
-
         temp_comp = Compound(op_str, arg_list)
         arg_list = []
         results.append(temp_comp)
@@ -130,6 +125,7 @@ with open('input.txt') as inp:
         queries.append(inp.readline()[:-1])
     
     num_clauses = int(inp.readline())
+#    num_clauses = 1 #Testing
     for x in range(num_clauses):
         line = inp.readline()[:-1]
         clause = [x.strip() for x in line.split('=>')]
@@ -149,8 +145,6 @@ print var_y.value
 l1 = [var_x, var_y]
 l2 = [con_bob, con_alice]
 
-
-
 comp_dxy = Compound('D', [var_x, var_y])
 comp_edxy = Compound('E', [comp_dxy, var_y])
 
@@ -168,4 +162,12 @@ print occur_check(var_y, comp_dxy, {})
 
 #objectify(['Asdlkf(x,y,Goal)','Box(x,Ant,y)'])
 print kb
-print len(kb)
+#print len(kb), kb[0].lhs[0].args[1].value, kb[0].rhs.args[2].value
+
+t2 = unify(kb[0].lhs[0], kb[0].rhs)
+print 'united', t2
+temp = subs({'x_1':'Alice', 'x_0':'Bob'}, kb[0].rhs)
+print temp.op
+print temp.args[0].value
+print temp.args[1].value
+print temp.args[2].value
