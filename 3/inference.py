@@ -20,6 +20,7 @@ class Clause:
         self.rhs = rhs
 
 def unify(x, y, theta = {}):
+    print 'unify', x, y, theta
     if theta is None:
         return None
     elif x == y:
@@ -36,15 +37,19 @@ def unify(x, y, theta = {}):
         return None
 
 def unify_var(var, x, theta):
+    print 'unify_var', var, x, theta
     if var.value in theta:
         return unify(theta[var.value], x, theta)
-    elif x.value in theta:
-        return unify(var, theta[x.value], theta)
+#    elif x.value in theta:
+#        return unify(var, theta[x.value], theta)
     elif occur_check(var, x, theta):
         return None
     else:
         theta_copy = dict(theta)
-        theta_copy[var.value] = x.value
+        if not isinstance(x, basestring):
+            theta_copy[var.value] = x.value
+        else:
+            theta_copy[var.value] = x
         return theta_copy
 
 def occur_check(var, x, theta):
@@ -131,8 +136,8 @@ with open('input.txt') as inp:
     num_queries = int(inp.readline())
     for x in range(num_queries):
         query = [inp.readline()[:-1]]
-        queries.append(objectify(query).lhs)
-    
+        queries.append(objectify(query).lhs[0])
+
     num_clauses = int(inp.readline())
     for x in range(num_clauses):
         line = inp.readline()[:-1]
@@ -148,10 +153,18 @@ with open('input.txt') as inp:
 
 print len(queries)
 print len(kb)
-print queries[0]
-answer = fol_bc_ask(kb, queries[0])
-for val in answer:
-    print 'the answer is', val
+print queries[0].op, queries[0].args[0].value
+
+h= Compound('H',[Variable('x')])
+#print unify(queries[0], h)
+
+for vals in kb:
+    print vals.lhs[0].op, vals.lhs[0].args[0].value, vals.rhs.op, vals.rhs.args[0].value
+    print unify(queries[0], vals.rhs)
+
+#answer = fol_bc_ask(kb, queries[0])
+#for val in answer:
+#    print 'the answer is', val
 #for query in queries:
 #    answer = fol_bc_ask(kb, query)
 #    print 'in here'
