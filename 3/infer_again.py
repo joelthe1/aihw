@@ -58,14 +58,12 @@ def unify_var(var, x, theta):
     return theta_copy
         
 def subs(theta, var):
-    print 'and theta is ', theta
     var_copy = deepcopy(var)
     if len(theta) == 0:
         return var_copy
     for index,val in enumerate(var.args):
         if isinstance(val, Variable) and val.value in theta:
             if theta[val.value][:2] == 'x_':
-                print 'doing this'
                 var_copy.args[index].value = theta[val.value]
             else:
                 var_copy.args[index] = Constant(theta[val.value])
@@ -103,32 +101,22 @@ def objectify(var):
         return Clause(True, results[0])
 
 def fol_ask(query, theta = {}):
-    print
-    print '###', query.op
     rets = []
     for clause in kb:
         s = unify(clause.rhs, query, theta)
-        print 's is ', s
         if s is None:
-            print 'continuign'
             continue
         elif clause.lhs == True:
-            print 'finally.', s
             return s
         else:
             for p in clause.lhs:
                 rets = []
-                print p.op, p.args[0].value
                 sub_p = subs(s, p)
-                print 'here'
-                print sub_p.op, sub_p.args, sub_p.args[0].value
                 ret_theta = fol_ask(sub_p, s)
                 rets.append(ret_theta)                
                 if ret_theta == None:
                     break
-            print 'here alright'
             if None not in rets:
-                print 'returning s'
                 return s
     return None
 
@@ -153,7 +141,12 @@ with open('input.txt') as inp:
         v = objectify(clause)
         kb.append(objectify(clause))
 
-print len(queries)
-print len(kb)
-#print queries[0].op, queries[0].args[0].value
-print fol_ask(queries[0])
+wfile = open('output.txt','w')
+
+for query in queries:
+    answer = fol_ask(query)
+    if answer is None:
+        wfile.write('FALSE\n')
+    else:
+        wfile.write('TRUE\n')
+wfile.close()
