@@ -113,6 +113,7 @@ def fol_ask(query, theta = {}):
             continue
         elif clause.lhs == True:
             print 'finally.', s
+            rets.append(ret_theta)
             return s
         else:
             for p in clause.lhs:
@@ -123,10 +124,10 @@ def fol_ask(query, theta = {}):
                 print sub_p.op, sub_p.args, sub_p.args[0].value
                 ret_theta = fol_ask(sub_p, s)
                 rets.append(ret_theta)
-                if None not in rets:
-                    return s
-                else:
-                    return None
+            if None not in rets:
+                return s
+            elif None in rets:
+                return None
     return None
 
 var_counter = 0
@@ -153,4 +154,4 @@ with open('input.txt') as inp:
 print len(queries)
 print len(kb)
 #print queries[0].op, queries[0].args[0].value
-print fol_ask(queries[5])
+print fol_ask(queries[0])
