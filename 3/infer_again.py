@@ -103,17 +103,17 @@ def objectify(var):
         return Clause(True, results[0])
 
 def fol_ask(query, theta = {}):
-    print 
+    print
     print '###', query.op
     rets = []
     for clause in kb:
         s = unify(clause.rhs, query, theta)
         print 's is ', s
         if s is None:
+            print 'continuign'
             continue
         elif clause.lhs == True:
             print 'finally.', s
-            rets.append(ret_theta)
             return s
         else:
             for p in clause.lhs:
@@ -123,11 +123,13 @@ def fol_ask(query, theta = {}):
                 print 'here'
                 print sub_p.op, sub_p.args, sub_p.args[0].value
                 ret_theta = fol_ask(sub_p, s)
-                rets.append(ret_theta)
+                rets.append(ret_theta)                
+                if ret_theta == None:
+                    break
+            print 'here alright'
             if None not in rets:
+                print 'returning s'
                 return s
-            elif None in rets:
-                return None
     return None
 
 var_counter = 0
