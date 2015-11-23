@@ -1,0 +1,6 @@
+1
+G(Tom)
+3
+Q(y) => A(y)
+A(x) => G(x)
+Q(Tom)

@@ -24,14 +24,16 @@ def unify(x, y, theta = {}):
         return None
     elif x == y:
         return theta
+    elif isinstance(x, Constant) and isinstance(y, Constant):
+        if x.value == y.value:
+                return theta
+        return None
     elif isinstance(x, Variable):
         return unify_var(x, y, theta)
     elif isinstance(y, Variable):
         return unify_var(y, x, theta)
     elif isinstance(x, Compound) and isinstance(y, Compound):
         return unify(x.args, y.args, unify(x.op, y.op, theta))
-    elif isinstance(x, Constant) or isinstance(y, Constant):
-        return None
     elif type(x) is list and type(y) is list and len(x) == len(y):
         if len(x) == 0:
             return theta
@@ -42,25 +44,31 @@ def unify(x, y, theta = {}):
 def unify_var(var, x, theta):
     if var.value in theta:
         return unify(theta[var.value], x, theta)
-#    elif x.value in theta:
-#        return unify(var, theta[x.value], theta)
-#    elif occur_check(var, x, theta):
-#        return None
+    elif isinstance(x, Constant):
+        if x.value in theta:
+            return unify(var, theta[x.value], theta)
+    elif isinstance(x, basestring):
+        if x in theta:
+            return unify(var, theta[x.value], theta)
+    theta_copy = dict(theta)
+    if not isinstance(x, basestring):
+        theta_copy[var.value] = x.value
     else:
-        theta_copy = dict(theta)
-        if not isinstance(x, basestring):
-            theta_copy[var.value] = x.value
-        else:
-            theta_copy[var.value] = x
-        return theta_copy
+        theta_copy[var.value] = x
+    return theta_copy
         
 def subs(theta, var):
+    print 'and theta is ', theta
     var_copy = deepcopy(var)
     if len(theta) == 0:
         return var_copy
-    for val in var_copy.args:
+    for index,val in enumerate(var.args):
         if isinstance(val, Variable) and val.value in theta:
-            val.value = theta[val.value]
+            if theta[val.value][:2] == 'x_':
+                print 'doing this'
+                var_copy.args[index].value = theta[val.value]
+            else:
+                var_copy.args[index] = Constant(theta[val.value])
     return var_copy
 
 def objectify(var):
@@ -95,6 +103,7 @@ def objectify(var):
         return Clause(True, results[0])
 
 def fol_ask(query, theta = {}):
+    print 
     print '###', query.op
     rets = []
     for clause in kb:
@@ -102,20 +111,22 @@ def fol_ask(query, theta = {}):
         print 's is ', s
         if s is None:
             continue
+        elif clause.lhs == True:
+            print 'finally.', s
+            return s
         else:
-            if clause.lhs == True:
-                return s
-            else:
-                for p in clause.lhs:
-                    rets = []
-                    print p.op, p.args[0].value
-                    sub_p = subs(s, p)
-                    print 'here'
-                    print sub_p.op, sub_p.args[0].value
-                    ret_theta = fol_ask(sub_p, s)
-                    rets.append(ret_theta)
-#                if None not in rets:
-#                    return s
+            for p in clause.lhs:
+                rets = []
+                print p.op, p.args[0].value
+                sub_p = subs(s, p)
+                print 'here'
+                print sub_p.op, sub_p.args, sub_p.args[0].value
+                ret_theta = fol_ask(sub_p, s)
+                rets.append(ret_theta)
+                if None not in rets:
+                    return s
+                else:
+                    return None
     return None
 
 var_counter = 0
@@ -142,4 +153,4 @@ with open('input.txt') as inp:
 print len(queries)
 print len(kb)
 #print queries[0].op, queries[0].args[0].value
-print fol_ask(queries[0])
+print fol_ask(queries[5])
