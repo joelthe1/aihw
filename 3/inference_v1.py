@@ -20,14 +20,11 @@ class Clause:
         self.rhs = rhs
 
 def unify(x, y, theta = {}):
+    print 'unify', x, y, theta
     if theta is None:
         return None
     elif x == y:
         return theta
-    elif isinstance(x, Constant) and isinstance(y, Constant):
-        if x.value == y.value:
-                return theta
-        return None
     elif isinstance(x, Variable):
         return unify_var(x, y, theta)
     elif isinstance(y, Variable):
@@ -35,38 +32,73 @@ def unify(x, y, theta = {}):
     elif isinstance(x, Compound) and isinstance(y, Compound):
         return unify(x.args, y.args, unify(x.op, y.op, theta))
     elif type(x) is list and type(y) is list and len(x) == len(y):
-        if len(x) == 0:
+        if not x:
             return theta
         return unify(x[1:], y[1:], unify(x[0], y[0], theta))
     else:
         return None
 
 def unify_var(var, x, theta):
+    print 'unify_var', var, x, theta
     if var.value in theta:
         return unify(theta[var.value], x, theta)
-    elif isinstance(x, Constant):
-        if x.value in theta:
-            return unify(var, theta[x.value], theta)
-    elif isinstance(x, basestring):
-        if x in theta:
-            return unify(var, theta[x.value], theta)
-    theta_copy = dict(theta)
-    if not isinstance(x, basestring):
-        theta_copy[var.value] = x.value
+#    elif x.value in theta:
+#        return unify(var, theta[x.value], theta)
+    elif occur_check(var, x, theta):
+        return None
     else:
-        theta_copy[var.value] = x
-    return theta_copy
-        
+        theta_copy = dict(theta)
+        if not isinstance(x, basestring):
+            theta_copy[var.value] = x.value
+        else:
+            theta_copy[var.value] = x
+        return theta_copy
+
+def occur_check(var, x, theta):
+    if var == x:
+        return True
+    elif isinstance(x, Variable) and x.value in theta:
+        return occur_check(var, theta[x.value], theta)
+    elif isinstance(x, Compound):
+        o1 = occur_check(var, x.op, theta)
+        o2 = occur_check(var, x.args, theta)
+        return o1 or o2
+    elif type(x) is list:
+        for e in x:
+            if occur_check(var, e, theta):
+                return True
+    else:
+        return False
+
+def fol_bc_ask(kb, query):
+    return fol_bc_or(kb, query, {})
+
+def fol_bc_or(kb, goal, theta):
+    for expr in kb:
+        for s in fol_bc_and(kb, expr.lhs, unify(expr.rhs, goal, theta)):
+            yield s
+
+def fol_bc_and(kb, goals, theta):
+    if theta is None:
+        pass
+    elif len(goals) == 0 or not goals:
+        yield theta
+    else:
+        first, rest = goals[0], goals[1:]
+        for s in fol_bc_or(kb, subs(theta, first), theta):
+            for s2 in fol_bc_and(kb, rest, s):
+                yield s2
+
 def subs(theta, var):
     var_copy = deepcopy(var)
+    print '*****************##################'
+    print 'op', var.op
+    print  'args', var.args
     if len(theta) == 0:
         return var_copy
-    for index,val in enumerate(var.args):
+    for val in var_copy.args:
         if isinstance(val, Variable) and val.value in theta:
-            if theta[val.value][:2] == 'x_':
-                var_copy.args[index].value = theta[val.value]
-            else:
-                var_copy.args[index] = Constant(theta[val.value])
+            val.value = theta[val.value]
     return var_copy
 
 def objectify(var):
@@ -98,28 +130,8 @@ def objectify(var):
     if len(results) > 1:
         return Clause(results[:-1], results[-1])
     else:
-        return Clause(True, results[0])
-
-def fol_ask(query, theta = {}):
-    rets = []
-    for clause in kb:
-        s = unify(clause.rhs, query, theta)
-        if s is None:
-            continue
-        elif clause.lhs == True:
-            return s
-        else:
-            for p in clause.lhs:
-                rets = []
-                sub_p = subs(s, p)
-                ret_theta = fol_ask(sub_p, s)
-                rets.append(ret_theta)                
-                if ret_theta == None:
-                    break
-            if None not in rets:
-                return s
-    return None
-
+        return Clause([results[0]], True)
+        
 var_counter = 0
 queries = []
 clauses = {}
@@ -129,7 +141,7 @@ with open('input.txt') as inp:
     num_queries = int(inp.readline())
     for x in range(num_queries):
         query = [inp.readline()[:-1]]
-        queries.append(objectify(query).rhs)
+        queries.append(objectify(query).lhs[0])
 
     num_clauses = int(inp.readline())
     for x in range(num_clauses):
@@ -138,15 +150,40 @@ with open('input.txt') as inp:
         if len(clause) > 1:
             lhs = [x.strip() for x in clause[0].split('^')]
             clause = lhs + [clause[-1]]
+        print clause
         v = objectify(clause)
+        print v.lhs
+        print v.rhs
         kb.append(objectify(clause))
 
-wfile = open('output.txt','w')
+print len(queries)
+print len(kb)
+print queries[0].op,  queries[0].args[0].value
 
-for query in queries:
-    answer = fol_ask(query)
-    if answer is None:
-        wfile.write('FALSE\n')
-    else:
-        wfile.write('TRUE\n')
-wfile.close()
+h= Compound('H',[Variable('x')])
+print unify(queries[0], h)
+
+for vals in kb:
+    print vals.lhs[0].op, vals.lhs[0].args[0].value, vals.rhs.op, vals.rhs.args[0].value
+    print unify(queries[0], vals.rhs)
+    temp = subs(unify(queries[0], vals.rhs), vals.rhs)
+    print temp.op, temp.args[0].value
+    break
+
+print '%%%%%%%%%%%%'
+answer = fol_bc_ask(kb, queries[0])
+print '%%%%%%%%%%%%'
+vars = queries[0].args[0].value
+print vars
+exit()
+for a in answer:
+    for x,v in a.items():
+        if x == vars:
+            print x,v
+    
+#for query in queries:
+#    answer = fol_bc_ask(kb, query)
+#    print 'in here'
+#    for res in answer:
+#        print 'in here again'
+#        print res
