@@ -1,5 +1,6 @@
 import re
 from copy import deepcopy
+import sys
 
 class Constant:
     def __init__(self, cname):
@@ -101,6 +102,8 @@ def objectify(var):
         return Clause(True, results[0])
 
 def fol_ask(query, theta = {}):
+    print
+    print '####', query.op
     rets = []
     for clause in kb:
         s = unify(clause.rhs, query, theta)
@@ -113,7 +116,7 @@ def fol_ask(query, theta = {}):
                 rets = []
                 sub_p = subs(s, p)
                 ret_theta = fol_ask(sub_p, s)
-                rets.append(ret_theta)                
+                rets.append(ret_theta)
                 if ret_theta == None:
                     break
             if None not in rets:
@@ -125,7 +128,8 @@ queries = []
 clauses = {}
 objs = []
 kb = []
-with open('input.txt') as inp:
+inputFile = sys.argv[2]
+with open(inputFile) as inp:
     num_queries = int(inp.readline())
     for x in range(num_queries):
         query = [inp.readline()[:-1]]
@@ -149,4 +153,5 @@ for query in queries:
         wfile.write('FALSE\n')
     else:
         wfile.write('TRUE\n')
+    break
 wfile.close()
