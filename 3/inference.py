@@ -85,13 +85,6 @@ def objectify(var):
             constt_match = re.match(r'^[A-Z].*', val)
             if var_match is not None:
                 arg_list.append(Variable(var_match.group(0)))
-#                if var_match.group(0) in var_map:
-#                    temp_var = Variable(var_map[var_match.group(0)])
-#                else:    
-#                    var_map[var_match.group(0)] = 'x_%d' % var_counter
-#                    temp_var = Variable(var_map[var_match.group(0)])
-#                arg_list.append(temp_var)
-#                var_counter += 1
             elif constt_match is not None:
                 arg_list.append(Constant(constt_match.group(0)))
         temp_comp = Compound(op_str, arg_list)
@@ -172,9 +165,6 @@ with open(inputFile) as inp:
         if len(clause) > 1:
             lhs = [x.strip() for x in clause[0].split('^')]
             clause = lhs + [clause[-1]]
-#        v = objectify(clause)
-#        print 'printing this ', v.rhs.op, v.rhs.args[0].value, v.lhs[0].op, v.lhs[0].args[0].value
-        
         kb.append(objectify(clause))
 
 wfile = open('output.txt','w')
