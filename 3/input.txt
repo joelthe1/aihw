@@ -1,6 +1,6 @@
 6
-F(Bob)
 H(John)
+F(Bob)
 ~H(Alice)
 ~H(John)
 G(Bob)

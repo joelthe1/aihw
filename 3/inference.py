@@ -84,13 +84,14 @@ def objectify(var):
             var_match = re.match(r'^[a-z]', val)
             constt_match = re.match(r'^[A-Z].*', val)
             if var_match is not None:
-                if var_match.group(0) in var_map:
-                    temp_var = Variable(var_map[var_match.group(0)])
-                else:    
-                    var_map[var_match.group(0)] = 'x_%d' % var_counter
-                    temp_var = Variable(var_map[var_match.group(0)])
-                arg_list.append(temp_var)
-                var_counter += 1
+                arg_list.append(Variable(var_match.group(0)))
+#                if var_match.group(0) in var_map:
+#                    temp_var = Variable(var_map[var_match.group(0)])
+#                else:    
+#                    var_map[var_match.group(0)] = 'x_%d' % var_counter
+#                    temp_var = Variable(var_map[var_match.group(0)])
+#                arg_list.append(temp_var)
+#                var_counter += 1
             elif constt_match is not None:
                 arg_list.append(Constant(constt_match.group(0)))
         temp_comp = Compound(op_str, arg_list)
@@ -101,12 +102,41 @@ def objectify(var):
     else:
         return Clause(True, results[0])
 
+def standardize(clause):
+    global var_counter
+    var_map = {}
+    for ar in clause.rhs.args:
+        if isinstance(ar, Variable):
+            if ar.value in var_map:
+                ar.value = var_map[ar.value]
+            else:
+                temp = ar.value
+                ar.value = 'x_%d' % var_counter
+                var_map[temp] = ar.value
+                var_counter += 1
+        
+    if clause.lhs is not True:
+        for l in clause.lhs:
+            for ar in l.args:
+                if isinstance(ar, Variable):
+                    if ar.value in var_map:
+                        ar.value = var_map[ar.value]
+                    else:
+                        temp = ar.value
+                        ar.value = 'x_%d' % var_counter
+                        var_map[temp] = ar.value
+                        var_counter += 1
+    return clause
+                        
 def fol_ask(query, theta = {}):
     print
     print '####', query.op
     rets = []
-    for clause in kb:
+    for c in kb:
+        clause = deepcopy(c)
+        clause = standardize(clause)
         s = unify(clause.rhs, query, theta)
+        print 's is ', s
         if s is None:
             continue
         elif clause.lhs == True:
@@ -142,11 +172,13 @@ with open(inputFile) as inp:
         if len(clause) > 1:
             lhs = [x.strip() for x in clause[0].split('^')]
             clause = lhs + [clause[-1]]
-        v = objectify(clause)
+#        v = objectify(clause)
+#        print 'printing this ', v.rhs.op, v.rhs.args[0].value, v.lhs[0].op, v.lhs[0].args[0].value
+        
         kb.append(objectify(clause))
 
 wfile = open('output.txt','w')
-
+print len(kb)
 for query in queries:
     answer = fol_ask(query)
     if answer is None:
