@@ -1,10 +1,10 @@
 6
-H(John)
-F(Bob)
-~H(Alice)
 ~H(John)
-G(Bob)
+H(John)
 G(Tom)
+G(Bob)
+~H(Alice)
+F(Bob)
 14
 A(x) => H(x)
 D(x,y) => ~H(y)

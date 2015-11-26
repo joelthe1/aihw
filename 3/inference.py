@@ -120,6 +120,30 @@ def standardize(clause):
                         var_map[temp] = ar.value
                         var_counter += 1
     return clause
+
+def fol_bc_ask(query):
+    return fol_bc_or(query, {})
+
+def fol_bc_or(goal, theta):
+    for c in kb:
+        clause = deepcopy(c)
+        clause = standardize(clause)
+        for theta1 in fol_bc_and(clause.lhs, unify(clause.rhs, goal, theta)):
+            yield theta1
+
+def fol_bc_and(goals, theta):
+    if theta == None:
+        pass
+    elif goals == True or len(goals) == 0:
+        yield theta
+    else:
+        first = goals[0]
+        rest = []
+        if len(goals) > 1:
+            rest = goals[1:]
+        for theta1 in fol_bc_or(subs(theta, first), theta):
+            for theta2 in fol_bc_and(rest, theta1):
+                yield theta2
                         
 def fol_ask(query, theta = {}):
     print
@@ -169,11 +193,15 @@ with open(inputFile) as inp:
 
 wfile = open('output.txt','w')
 print len(kb)
-for query in queries:
-    answer = fol_ask(query)
-    if answer is None:
-        wfile.write('FALSE\n')
-    else:
-        wfile.write('TRUE\n')
+answers = fol_bc_ask(queries[0])
+for a in answers:
+    print a
     break
+#for query in queries:
+#    answer = fol_ask(query)
+#    if answer is None:
+#        wfile.write('FALSE\n')
+#    else:
+#        wfile.write('TRUE\n')
+#    break
 wfile.close()
