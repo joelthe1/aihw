@@ -124,14 +124,23 @@ def standardize(clause):
 def fol_bc_ask(query):
     return fol_bc_or(query, {})
 
-def fol_bc_or(goal, theta):
-    for c in kb:
+def fol_bc_or(goal, theta, visited={}):
+#    print 'goal is ', goal.op
+    for index, c in enumerate(kb):
         clause = deepcopy(c)
         clause = standardize(clause)
-        for theta1 in fol_bc_and(clause.lhs, unify(clause.rhs, goal, theta)):
+        unified_theta = unify(clause.rhs, goal, theta)
+        updated_visited = visited
+        if unified_theta is not None:
+            temp = subs(unified_theta, clause.rhs)
+            if is_visited(index, temp, visited):
+                continue
+            else:
+                updated_visited = update_visited(index, temp, visited)
+        for theta1 in fol_bc_and(clause.lhs, unified_theta, updated_visited):
             yield theta1
 
-def fol_bc_and(goals, theta):
+def fol_bc_and(goals, theta, visited):
     if theta == None:
         pass
     elif goals == True or len(goals) == 0:
@@ -141,35 +150,33 @@ def fol_bc_and(goals, theta):
         rest = []
         if len(goals) > 1:
             rest = goals[1:]
-        for theta1 in fol_bc_or(subs(theta, first), theta):
-            for theta2 in fol_bc_and(rest, theta1):
+        for theta1 in fol_bc_or(subs(theta, first), theta, visited):
+            for theta2 in fol_bc_and(rest, theta1, visited):
                 yield theta2
-                        
-def fol_ask(query, theta = {}):
-    print
-    print '####', query.op
-    rets = []
-    for c in kb:
-        clause = deepcopy(c)
-        clause = standardize(clause)
-        s = unify(clause.rhs, query, theta)
-        print 's is ', s
-        if s is None:
-            continue
-        elif clause.lhs == True:
-            return s
-        else:
-            for p in clause.lhs:
-                rets = []
-                sub_p = subs(s, p)
-                ret_theta = fol_ask(sub_p, s)
-                rets.append(ret_theta)
-                if ret_theta == None:
-                    break
-            if None not in rets:
-                return s
-    return None
 
+def update_visited(index, pred, visited):
+    new_visited = deepcopy(visited)
+    for arg in pred.args:
+        if not isinstance(arg, Constant):
+            return new_visited
+    if index in new_visited:
+        new_visited[index].append(pred);
+    else:
+        new_visited[index] = [pred]
+    return new_visited
+
+def is_visited(index, pred, visited):
+    flag = False
+    if index in visited:
+        for p in visited[index]:
+            for index, arg in enumerate(p.args):
+                if isinstance(pred.args[index], Variable):
+                    return False
+                if isinstance(pred.args[index], Constant) and pred.args[index].value == arg.value:
+                    flag = True
+
+    return flag
+                                        
 var_counter = 0
 queries = []
 clauses = {}
@@ -192,16 +199,21 @@ with open(inputFile) as inp:
         kb.append(objectify(clause))
 
 wfile = open('output.txt','w')
-print len(kb)
-answers = fol_bc_ask(queries[0])
-for a in answers:
-    print a
-    break
-#for query in queries:
-#    answer = fol_ask(query)
-#    if answer is None:
-#        wfile.write('FALSE\n')
-#    else:
-#        wfile.write('TRUE\n')
-#    break
+#print len(kb)
+
+for query in queries:
+    ans_flag = False
+    answers = fol_bc_ask(query)
+#    print
+    for a in answers:
+        ans_flag = True
+        break
+    if ans_flag:
+        wfile.write('TRUE\n')
+    else:
+         wfile.write('FALSE\n')
+
+#    print fol_bc_ask(query).next()
+
 wfile.close()
+

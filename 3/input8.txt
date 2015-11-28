@@ -1,0 +1,9 @@
+1
+F(Bob)
+6
+P(Sam) => F(Bob)
+G(Sam) => P(Sam)
+Q(Dan) => G(Sam)
+F(King) => Q(Dan)
+F(Bob) => F(King)
+F(x) => F(Bob)
