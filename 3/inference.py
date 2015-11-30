@@ -24,20 +24,20 @@ def unify(x, y, theta = {}):
 #    print 'unify', x, y, theta
     if theta is None:
         return None
-    elif x == y:
+    elif constt_val(x) == constt_val(y) and constt_val(x) != float('-inf'):
         return theta
-    elif isinstance(x, Constant) and isinstance(y, Constant):
-        if x.value == y.value:
-                return theta
-        return None
-    elif isinstance(x, basestring) and isinstance(y, Constant):
-        if x == y.value:
-            return theta
-        return None
-    elif isinstance(y, basestring) and isinstance(x, Constant):
-        if y == x.value:
-            return theta
-        return None
+#    elif isinstance(x, Constant) and isinstance(y, Constant):
+#        if x.value == y.value:
+#            return theta
+#        return None
+#    elif isinstance(x, basestring) and isinstance(y, Constant):
+#        if x == y.value:
+#            return theta
+#        return None
+#    elif isinstance(y, basestring) and isinstance(x, Constant):
+#        if y == x.value:
+#            return theta
+#        return None
     elif isinstance(x, Variable):
         return unify_var(x, y, theta)
     elif isinstance(y, Variable):
@@ -51,15 +51,19 @@ def unify(x, y, theta = {}):
     else:
         return None
 
+def constt_val(x):
+    if isinstance(x, basestring):
+        return x
+    if isinstance(x, Constant):
+        return x.value
+    return float('-inf')
+    
 def unify_var(var, x, theta):
     if var.value in theta:
         return unify(theta[var.value], x, theta)
-    elif isinstance(x, Constant):
-        if x.value in theta:
-            return unify(var, theta[x.value], theta)
-    elif isinstance(x, basestring):
-        if x in theta:
-            return unify(var, theta[x.value], theta)
+    elif constt_val(x) in theta:
+#        print 'here', constt_val(x)
+        return unify(var, theta[constt_val(x)], theta)
     theta_copy = dict(theta)
     if not isinstance(x, basestring):
         theta_copy[var.value] = x.value
@@ -69,15 +73,17 @@ def unify_var(var, x, theta):
         
 def subs(theta, var):
     var_copy = deepcopy(var)
+#    print 'in subs', theta, var.op, var.args
     if len(theta) == 0:
         return var_copy
     for index,val in enumerate(var.args):
         if isinstance(val, Variable) and val.value in theta:
-            if theta[val.value][:2] == 'x_':
+            if theta[val.value][0].islower():
                 var_copy.args[index].value = theta[val.value]
             else:
                 var_copy.args[index] = Constant(theta[val.value])
     return var_copy
+
 
 def objectify(var):
     global var_counter
@@ -93,6 +99,7 @@ def objectify(var):
             var_match = re.match(r'^[a-z]', val)
             constt_match = re.match(r'^[A-Z].*', val)
             if var_match is not None:
+                
                 arg_list.append(Variable(var_match.group(0)))
             elif constt_match is not None:
                 arg_list.append(Constant(constt_match.group(0)))
@@ -134,7 +141,7 @@ def fol_bc_ask(query):
     return fol_bc_or(query, {})
 
 def fol_bc_or(goal, theta, visited={}):
-    print 'goal is ', goal.op
+    print 'goal is ', goal.op, goal.args
     for index, c in enumerate(kb):
         clause = deepcopy(c)
         clause = standardize(clause)
@@ -220,13 +227,13 @@ wfile = open('output.txt','w')
 #    wfile.write('FALSE\n')
 
 for query in queries:
+    var_counter = 0
     try:
         fol_bc_ask(query).next()
         wfile.write('TRUE\n')
-#        print 'TRUE'
+        print 'TRUE'
     except:
         wfile.write('FALSE\n')
-#        print 'FALSE'
+        print 'FALSE'
 
 wfile.close()
-
