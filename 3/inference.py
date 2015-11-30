@@ -29,6 +29,9 @@ def unify(x, y, theta = {}):
         if x.value == y.value:
                 return theta
         return None
+    elif isinstance(x, basestring) and isinstance(y, Constant):
+        if x == y.value:
+            return theta
     elif isinstance(x, Variable):
         return unify_var(x, y, theta)
     elif isinstance(y, Variable):
@@ -125,7 +128,7 @@ def fol_bc_ask(query):
     return fol_bc_or(query, {})
 
 def fol_bc_or(goal, theta, visited={}):
-#    print 'goal is ', goal.op
+#    print 'goal is ', goal.op, theta
     for index, c in enumerate(kb):
         clause = deepcopy(c)
         clause = standardize(clause)
