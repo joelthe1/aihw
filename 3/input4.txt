@@ -1,7 +1,6 @@
 1
-Fly(Ram)
-8
-Fly(x) ^ Friend(x,y) => Fly(y)
+Fly(Dr)
+7
 Parent(x,y) ^ Hero(y) => Fly(x)
 Parent(Dr,Doom)
 Hero(Doom)

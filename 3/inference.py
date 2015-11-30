@@ -201,19 +201,23 @@ with open(inputFile) as inp:
 wfile = open('output.txt','w')
 #print len(kb)
 
-for query in queries:
-    ans_flag = False
-    answers = fol_bc_ask(query)
-#    print
-    for a in answers:
-        ans_flag = True
-        break
-    if ans_flag:
-        wfile.write('TRUE\n')
-    else:
-         wfile.write('FALSE\n')
+#answers = fol_bc_ask(queries[0]).next()
+#for a in answers:
+#    ans_flag = True
+#    break
+#if ans_flag:
+#    wfile.write('TRUE\n')
+#else:
+#    wfile.write('FALSE\n')
 
-#    print fol_bc_ask(query).next()
+for query in queries:
+    try:
+        fol_bc_ask(query).next()
+        wfile.write('TRUE\n')
+#        print 'TRUE'
+    except:
+        wfile.write('FALSE\n')
+#        print 'FALSE'
 
 wfile.close()
 
