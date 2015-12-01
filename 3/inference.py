@@ -141,7 +141,7 @@ def fol_bc_ask(query):
     return fol_bc_or(query, {})
 
 def fol_bc_or(goal, theta, visited={}):
-    print 'goal is ', goal.op, goal.args
+#    print 'goal is ', goal.op, goal.args
     for index, c in enumerate(kb):
         clause = deepcopy(c)
         clause = standardize(clause)
@@ -231,9 +231,9 @@ for query in queries:
     try:
         fol_bc_ask(query).next()
         wfile.write('TRUE\n')
-        print 'TRUE'
+#        print 'TRUE'
     except:
         wfile.write('FALSE\n')
-        print 'FALSE'
+#        print 'FALSE'
 
 wfile.close()
